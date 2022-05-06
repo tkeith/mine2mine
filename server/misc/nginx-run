@@ -1,0 +1,46 @@
+#!/bin/bash
+
+cd `dirname $0`
+
+nohup $(
+  setup_config () {
+    cp /opt/nginx-app.conf /etc/nginx/conf.d/nginx-app.conf
+    rm /etc/nginx/conf.d/default.conf
+    # wait for proxy targets to become available
+    while ! nginx -t; do
+      echo 'nginx config not yet valid; checking again in 1 second'
+      sleep 1
+    done
+    /etc/init.d/nginx reload
+  }
+
+  check_nginx () {
+    while ! test $(curl -s -o /dev/null -w "%{http_code}" localhost/.nonexistent) -eq 404; do
+      echo 'nginx not ready; checking again in 1 second'
+      sleep 1
+    done
+  }
+
+  setup_cert () {
+    while ! certbot certonly -n --nginx -d "${CERTBOT_DOMAIN}" -m "${CERTBOT_EMAIL}" --agree-tos; do
+      echo 'failed to set up SSL cert; trying again in 1 minute'
+      sleep 60
+    done
+  }
+
+  htpasswd -b -c /opt/htpasswd-admin admin "$(cat /opt/nginx-admin-password.txt)"
+  check_nginx
+  if $USE_SSL; then
+    setup_cert
+  fi
+  setup_config
+
+  while true; do
+    if $USE_SSL; then
+      setup_cert
+    fi
+    sleep 21600
+  done
+) &
+
+exec nginx -g 'daemon off;'

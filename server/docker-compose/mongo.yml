@@ -1,0 +1,18 @@
+volumes:
+
+  mongo: null
+
+services:
+
+  mongo:
+    image: mongo:5.0.5
+    restart: on-failure
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: app
+      MONGO_INITDB_ROOT_PASSWORD: app
+    volumes:
+      - mongo:/data/db
+
+  # next:
+  #   depends_on:
+  #     - mongo

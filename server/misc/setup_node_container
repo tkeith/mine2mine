@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+cd /opt/app # top level app directory
+echo "installing node modules into volume shared between containers"
+# flock ensures that the containers perform this installation into a shared volume sequentially, so they don't clash
+flock node_modules/flock-for-multi-container-installs npm install
