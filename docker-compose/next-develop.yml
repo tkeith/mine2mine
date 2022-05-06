@@ -1,0 +1,4 @@
+services:
+
+  next:
+    command: bash -c 'misc/setup_node_container && echo "running next in dev mode" && cd src/next && npx next dev -p 8001'

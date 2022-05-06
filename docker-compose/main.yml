@@ -1,0 +1,18 @@
+version: '3.8'
+
+volumes:
+
+  node_modules: null
+
+services:
+
+  nginx:
+    build:
+      context: ../docker-contexts/nginx
+    restart: on-failure
+    volumes:
+      - ../misc/nginx-run:/opt/run
+      - ../build/nginx-app.conf:/opt/nginx-app.conf
+      - ../build/nginx-admin-password.txt:/opt/nginx-admin-password.txt
+    env_file:
+      - ../build/nginx.env

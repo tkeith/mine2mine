@@ -1,0 +1,12 @@
+volumes:
+
+  nginx_etc_letsencrypt: null
+
+services:
+
+  nginx:
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - nginx_etc_letsencrypt:/etc/letsencrypt

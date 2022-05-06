@@ -1,0 +1,18 @@
+services:
+
+  next:
+    build:
+      context: ../docker-contexts/node
+    restart: on-failure
+    volumes:
+      - ../build/config.json:/opt/config.json
+      - ../src:/opt/app/src
+      - ../package.json:/opt/app/package.json
+      - ../package-lock.json:/opt/app/package-lock.json
+      - ../misc:/opt/app/misc
+      - node_modules:/opt/app/node_modules
+    command: bash -c 'misc/setup_node_container && echo "running next in prod mode" && cd src/next && npx nodemon --watch .. --ext js --exec bash -c "npx next build && npx next start -p 8001"'
+
+  # nginx:
+  #   depends_on:
+  #     - next
