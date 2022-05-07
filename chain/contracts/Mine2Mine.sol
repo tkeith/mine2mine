@@ -44,14 +44,6 @@ contract Mine2Mine {
     require(expiresAt > block.timestamp);
     require(quantity > 0);
 
-    // tasks.push(Task(msg.sender, text, bid, expiresAt, quantity, quantity, new Submission[](0)));
-    // uint256 taskId = tasks.length - 1;
-
-    // emit TaskCreated(taskId, msg.sender, text, bid, expiresAt, quantity);
-
-    // return taskId;
-
-
     numberOfTasks += 1;
     uint256 taskId = numberOfTasks;
     Task storage task = tasks[taskId];
@@ -61,6 +53,10 @@ contract Mine2Mine {
     task.expiresAt = expiresAt;
     task.originalQuantity = quantity;
     task.remainingQuantity = quantity;
+
+    emit TaskCreated(taskId, msg.sender, text, bid, expiresAt, quantity);
+
+    return taskId;
   }
 
   function createSubmission(uint256 taskId, string calldata ipfsHash) external returns(uint256) {
@@ -68,12 +64,16 @@ contract Mine2Mine {
 
     Task storage task = tasks[taskId];
 
+    // here, we should transfer `task.bid` of USDC from `task.creator` to `msg.sender`
+
     task.numberOfSubmissions += 1;
     uint256 submissionId = task.numberOfSubmissions;
 
     Submission storage submission = task.submissions[submissionId];
     submission.creator = msg.sender;
     submission.ipfsHash = ipfsHash;
+
+    tasks.remainingQuantity -= 1;
 
     emit SubmissionCreated(taskId, submissionId, msg.sender, ipfsHash);
 
