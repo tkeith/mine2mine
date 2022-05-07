@@ -140,7 +140,7 @@ class Bubble {
         child: SizedBox(
           width: 100,
           height: 100,
-          child: Image.asset("slime_placeholder.gif"),
+          child: Image.asset("check.png"),
         ),
       ),
       top: y,
