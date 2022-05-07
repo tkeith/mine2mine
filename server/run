@@ -9,7 +9,7 @@ import random
 import string
 import textwrap
 
-PROJECT_NAME = 'dapp-framework'
+PROJECT_NAME = 'mine2mine'
 DEFAULT_PORT = 8000
 NEXT_ENABLED = True
 EXPRESS_ENABLED = True
@@ -125,7 +125,7 @@ def main():
       f'root@{host}',
       f'''
         systemctl stop {PROJECT_NAME} || true
-        /opt/{PROJECT_NAME}/run /opt/{PROJECT_NAME}/{args.config} stop
+        /opt/{PROJECT_NAME}/run /opt/{PROJECT_NAME}/{args.config} stop || true
       ''',
     ])
 
