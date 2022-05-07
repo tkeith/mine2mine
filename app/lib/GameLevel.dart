@@ -4,6 +4,7 @@ import 'package:app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:app/test.g.dart';
+import 'RewardPage.dart';
 import 'SlimeFactory.dart';
 import 'dart:core';
 import 'package:http/http.dart';
@@ -11,6 +12,7 @@ import 'dart:math'; //used for the random number generator
 import 'package:web3dart/web3dart.dart';
 
 import 'const.dart';
+import 'ifpssrc/ipfs_client_flutter_base.dart';
 const privateKey = "26dd62ddab48780847376fc95e0a8d635206126242b8d2e549d7f14255ce943c";
 const ABI = [{ "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "submissionId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "SubmissionCreated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "text", "type": "string" }, { "indexed": false, "internalType": "uint256", "name": "bid", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "TaskCreated", "type": "event" }, { "inputs": [{ "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "createSubmission", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "text", "type": "string" }, { "internalType": "uint256", "name": "bid", "type": "uint256" }, { "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "createTask", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }];
 const CONTRACT_ADDRESS = '0x51797a758376671eA20f0Ace40c8DF7EcD72bc97';
@@ -103,6 +105,18 @@ class _GameLevelState extends State<GameLevel> {
   }
 
 
+  Future<bool> uploadToIpfs() async{
+    IpfsClient ipfsClient = IpfsClient();
+    var res = await ipfsClient.mkdir(dir: 'testDir');
+
+    var res1 = await ipfsClient.write(
+        dir: 'testpath3/Simulator.png',
+        filePath: "[FILE_PATH]/Simulator.png",
+        fileName: "Simulator.png");
+
+    var res2 = await ipfsClient.ls(dir: "testDir");
+    return true;
+  }
 
   Future<bool> initWallet()async{
     final credentials = EthPrivateKey.fromHex(privateKey);
@@ -114,10 +128,12 @@ class _GameLevelState extends State<GameLevel> {
     List<dynamic> tasks = await getAllTasks();
     print("!!" + tasks.toString());
 
+    // IpfsClient ipfsClient = IpfsClient();
     Test testcontract = Test(address: EthereumAddress.fromHex("0x51797a758376671eA20f0Ace40c8DF7EcD72bc97"), client: client);
 
     // TODO call ifps
-    // testcontract.createSubmission(tasks[0]['taskId'], ipfsHash, credentials: credentials);
+    testcontract.createSubmission(tasks[0]['taskId'], "ipfsHash", credentials: credentials);
+
 
     // client.call(contract: contract, function: function, params: params)
     // return true;
@@ -142,8 +158,8 @@ class _GameLevelState extends State<GameLevel> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Stack(
+    return Scaffold(
+      body: Stack(
         children: [
           Image.asset("gamebg.jpeg", fit: BoxFit.cover, height: double.infinity,
             width: double.infinity,
@@ -152,6 +168,24 @@ class _GameLevelState extends State<GameLevel> {
             completionCallback: (){},
             generating_rate: widget.gameSpeed!.toDouble() * 0.005,
             tasksInfo: ["asdf", "asdf1", "asdf2"],
+          ),
+          Align(
+            alignment: AlignmentDirectional.topEnd,
+            child: Container(
+              padding: EdgeInsets.all(10),
+              child: InkWell(
+                child: Image.asset("goldbars.png", width: 100, height: 100,),
+                onTap: (){
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              RewardPage()
+                      )
+                  );
+                },
+              )
+            ),
           ),
 
 
