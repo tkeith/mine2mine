@@ -28,6 +28,7 @@ function TasksTable() {
       <td>{task.bid}</td>
       <td>{task.originalQuantity}</td>
       <td>{task.remainingQuantity}</td>
+      <td><a href={'/tasks/' + task.taskId}>Submissions</a></td>
     </tr>
   )
 

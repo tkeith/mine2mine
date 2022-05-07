@@ -1,4 +1,3 @@
-import Web3 from 'web3'
 import getDb from "../lib/db.js"
 import { myContract, web3 } from '../lib/misc.js';
 
