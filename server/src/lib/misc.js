@@ -1,22 +1,9 @@
-import getDb from "./db.js"
+import Web3 from 'web3'
 
-export async function getTextOld() {
-  return await getDb()
-    .then(db =>
-      db.collection('test').findOne({})
-    )
-    .then(row =>
-      row?.text || "no data yet"
-    )
-    .catch(err =>
-      console.log(err)
-    )
-}
+export const paymentTokenDecimals = 6;
+export const paymentTokenMultiplier = 10 ** paymentTokenDecimals;
+export const web3 = new Web3('https://polygon-rpc.com/');
+export const ABI = [{ "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "submissionId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "SubmissionCreated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "text", "type": "string" }, { "indexed": false, "internalType": "uint256", "name": "bid", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "TaskCreated", "type": "event" }, { "inputs": [{ "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "createSubmission", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "text", "type": "string" }, { "internalType": "uint256", "name": "bid", "type": "uint256" }, { "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "createTask", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }]
 
-export const getText = async () => {
-  const db = await getDb()
-  const row = await db.collection('test').findOne({})
-  console.log(row)
-  const text = row?.text || "no data yet"
-  return text
-}
+export const CONTRACT_ADDRESS = '0x51797a758376671eA20f0Ace40c8DF7EcD72bc97'
+export const myContract = new web3.eth.Contract(ABI, CONTRACT_ADDRESS)

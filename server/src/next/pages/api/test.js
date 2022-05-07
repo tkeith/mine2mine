@@ -1,4 +1,4 @@
-import { getDb } from "../../../lib/db"
+import getDb from "../../../lib/db"
 
 export default function handler(req, res) {
   if (req.method == 'GET') {
