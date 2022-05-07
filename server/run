@@ -9,7 +9,7 @@ import random
 import string
 import textwrap
 
-PROJECT_NAME = 'dapp-framework'
+PROJECT_NAME = 'mine2mine'
 DEFAULT_PORT = 8000
 NEXT_ENABLED = True
 EXPRESS_ENABLED = True
