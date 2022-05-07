@@ -18,11 +18,13 @@ import 'ifpssrc/ipfs_client_flutter_base.dart';
 const privateKey = "26dd62ddab48780847376fc95e0a8d635206126242b8d2e549d7f14255ce943c";
 const ABI = [{ "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "submissionId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "SubmissionCreated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "text", "type": "string" }, { "indexed": false, "internalType": "uint256", "name": "bid", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "TaskCreated", "type": "event" }, { "inputs": [{ "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "createSubmission", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "text", "type": "string" }, { "internalType": "uint256", "name": "bid", "type": "uint256" }, { "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "createTask", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }];
 const CONTRACT_ADDRESS = '0x51797a758376671eA20f0Ace40c8DF7EcD72bc97';
-
+String? myaddress;
 
 
 Function? recordStart ;
 Function? recordStop ;
+Function? aimSucceedCallback;
+Function? aimFailedCallback;
 
 class GameLevel extends StatefulWidget {
   final int? gameSpeed;
@@ -86,13 +88,32 @@ class _GameLevelState extends State<GameLevel> {
   Future<void> _stop() async {
     _timer?.cancel();
     final path = await _audioRecorder.stop();
-    print(File('$path').existsSync());
     Uint8List rawdata = await File('$path').readAsBytes();
-    // TODO send raw data to api
-    sendrawdataToServer( rawdata );
+    // send raw data to api
+    bool res = await sendrawdataToServer( rawdata );
+    
+    //  tasks
+    try {
+      final credentials = EthPrivateKey.fromHex(privateKey);
+      final address = credentials.address;
+      String rpcUrl = "https://polygon-rpc.com";
+      final client = Web3Client(rpcUrl, Client());
+      print(address.hexEip55);
+      myaddress = address.hexEip55;
+      var res = await client.getBalance(address);
+
+      Test testcontract = Test(address: EthereumAddress.fromHex("0x51797a758376671eA20f0Ace40c8DF7EcD72bc97"), client: client);
+      BigInt taskid = new BigInt.from(tasks[4]['taskId']);
+      testcontract.createSubmission(taskid, "ipfsHash", credentials: credentials);
+    } catch (e) {
+    }
+
+
+    
     setState(() => recording = false);
   }
 
+  List<dynamic> tasks = [];
   bool recording = false;
   double recordDuration = 0.0;
   bool showAim = false;
@@ -104,15 +125,26 @@ class _GameLevelState extends State<GameLevel> {
     super.initState();
     recordStart = _start;
     recordStop = _stop;
+    aimSucceedCallback = aimSucceed;
+    aimFailedCallback = aimFailed;
     recording = false;
     recordDuration = 0.0;
     showAim = false;
     aimDx = 0 ;
     aimDy = 0;
     slimeList = [];
-    initWallet();
+    loaded = false;
+    final credentials = EthPrivateKey.fromHex(privateKey);
+    final address = credentials.address;
+    String rpcUrl = "https://polygon-rpc.com";
+    final client = Web3Client(rpcUrl, Client());
+    print(address.hexEip55);
+    myaddress = address.hexEip55;
+    getData();
   }
 
+  bool loaded = false;
+  
 
   Future<bool> uploadToIpfs() async{
     IpfsClient ipfsClient = IpfsClient();
@@ -127,44 +159,23 @@ class _GameLevelState extends State<GameLevel> {
     return true;
   }
 
-  Future<bool> initWallet()async{
-    print("wallet");
-    final credentials = EthPrivateKey.fromHex(privateKey);
-    final address = credentials.address;
-    String rpcUrl = "https://polygon-rpc.com";
-    final client = Web3Client(rpcUrl, Client());
-    print(address.hexEip55);
-    var res = await client.getBalance(address);
-    List<dynamic> tasks = await getAllTasks();
-    print("!!" + tasks.toString());
+  Future<bool> getData()async{
+    List<dynamic> _tasks = [];
+    for( int i = 0 ; i <= 20; i++ ){
+      dynamic task = await getNextTask();
+      if( task == null ){
+        print("no more tasks!");
+        break;
+      }
+      tasks.add(task);
+    }
 
-    // TODO call ifps
-    // IpfsClient ipfsClient = IpfsClient(url: "https://ipfs.infura.io:5001/api/v0");
-    // var res_ipfs = await ipfsClient.mkdir(dir: 'testDir');
-    // print('res_ipfs.toString()');
-    // print(res_ipfs.toString());
-    // var res1 = await ipfsClient.write(
-    //     dir: 'testDir/test.png',
-    //     filePath: "/private/var/mobile/Containers/Data/Application/7A7DD6AB-1555-46F9-A900-AC3F968F03AE/tmp/54D91366-2684-4FC1-B91B-218620734399.m4a",
-    //     fileName: "test.png");
-    // print('res1.toString()' + res1.toString());
-    // print(res1.toString());
-    // var res2 = await ipfsClient.ls(dir: "testDir");
-    // print('res2.toString()');
-    // print(res2.toString());
-
-
-    // TODO add it back
-    // try {
-    //   Test testcontract = Test(address: EthereumAddress.fromHex("0x51797a758376671eA20f0Ace40c8DF7EcD72bc97"), client: client);
-    //   BigInt taskid = new BigInt.from(tasks[4]['taskId']);
-    //   testcontract.createSubmission(taskid, "ipfsHash", credentials: credentials);
-    // } catch (e) {
-    //   print(e);
-    // }
-
-
-
+    // _tasks = await getAllTasks();
+    setState(() {
+      loaded = true;
+      tasks = [];
+      // tasks.addAll(_tasks);
+    });
     return true;
   }
 
@@ -173,6 +184,19 @@ class _GameLevelState extends State<GameLevel> {
   // TODO generates slime at random positions
   List<Offset> slimeList = [];
 
+  int health = 10;
+  double bidPriceAll = 0.0;
+  void aimFailed(){
+    setState(() {
+      health = health - 1;
+    });
+  }
+
+  void aimSucceed(double bid){
+    setState(() {
+      bidPriceAll = bidPriceAll + bid;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,14 +209,26 @@ class _GameLevelState extends State<GameLevel> {
           Bubbles( key: ObjectKey("1"),
             completionCallback: (){},
             generating_rate: widget.gameSpeed!.toDouble() * 0.005,
-            tasksInfo: ["asdf", "asdf1", "asdf2"],
+            tasksInfo: tasks,
           ),
           Align(
             alignment: AlignmentDirectional.topEnd,
             child: Container(
               padding: EdgeInsets.all(10),
               child: InkWell(
-                child: Image.asset("goldbars.png", width: 100, height: 100,),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text( health.toString() ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(bidPriceAll.toString()),
+                        Image.asset("goldbars.png", width: 100, height: 100,),
+                      ],
+                    )
+                  ],
+                ),
                 onTap: (){
                   Navigator.push(
                       context,

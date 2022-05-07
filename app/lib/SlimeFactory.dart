@@ -122,7 +122,7 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
         if( aHeight >= height - 50 ){
           aHeight = height - 50;
         }
-        print("!!!" + widget.tasksInfo.toString());
+        // print("!!!" + widget.tasksInfo.toString());
         print(Bubble.nBubble.toString());
         if( widget.tasksInfo!.length > Bubble.nBubble ){
           bubbles.add( Bubble(Offset( aWidth, aHeight ),color, maxBubbleSize, widget.tasksInfo![ Bubble.nBubble ]) );
@@ -130,9 +130,12 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
 
       }
     }
-    bubbles.forEach((element) {
-      element.updateLifeSpan();
-    });
+    if( bubbles.length > 0 ){
+      bubbles.forEach((element) {
+        element.updateLifeSpan();
+      });
+    }
+
 
     setState(() {});
   }
@@ -172,8 +175,10 @@ class Bubble {
     // TODO updateLifeSpan, or update status
     // print("updateLifeSpan " + this.lifespan.toString());
     this.lifespan = this.lifespan + 1;
-    if( lifespan >= 400 ){
+    if( lifespan >= 1200 ){
       // TODO aim failed!
+      _BubblesState.removeBubbleById(this.id);
+      aimFailedCallback!();
     }
   }
 
@@ -186,11 +191,13 @@ class Bubble {
           onTapUp: (TapUpDetails details){
             recordStop!();
             _BubblesState.removeBubbleById(this.id);
+
+            aimSucceedCallback!( taskInfo["bid"].toDouble() );
           },
           onTapCancel: (){
             recordStop!();
             _BubblesState.removeBubbleById(this.id);
-
+            aimSucceedCallback!( taskInfo["bid"].toDouble() );
           },
         child: Column(
           children: [
@@ -206,8 +213,8 @@ class Bubble {
                 padding: EdgeInsets.all(10),
                 child: DefaultTextStyle(
                   style: TextStyle(fontSize: 20, color: Colors.black),
-                  child: Text(taskInfo.toString()),
-                ) ,
+                  child: Text(taskInfo["text"]),
+                ),
               )
 
             ),

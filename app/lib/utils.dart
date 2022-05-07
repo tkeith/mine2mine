@@ -7,6 +7,10 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web3dart/web3dart.dart';
+
+
+import 'GameLevel.dart';
 
 Future<String> apiRequest(String _url, Map jsonMap) async {
   print("apiRequest");
@@ -52,6 +56,25 @@ Future<List<dynamic>> getAllTasks() async {
   // }
 }
 
+Future<dynamic> getNextTask() async {
+  print("getNextTask" + myaddress.toString());
+  String _url = 'https://mine2mine.tk.co/express/users/' + myaddress! + '/getTask';
+  http.Response reply = await fetchTask(_url);
+  print(reply.body.runtimeType.toString());
+  dynamic singleTask = json.decode(reply.body);
+  print(singleTask.toString());
+  return singleTask;
+  // final body = json.decode(reply);
+  // print(body);
+  // if (body['status_code'] == 200) {
+  //   print("notify all friends about my post succeeded!");
+  //   return body;
+  // } else {
+  //   print(body['message']);
+  // }
+}
+
+
 
 Future<String> localPath() async {
   final directory = await getApplicationDocumentsDirectory();
@@ -88,5 +111,7 @@ Future<bool> sendrawdataToServer(Uint8List data) async{
   String reply = await apiRequest(_url, _json);
   final body = json.decode(reply);
   print(body.toString());
+
+
   return true;
 }
