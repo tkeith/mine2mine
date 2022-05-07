@@ -2,6 +2,7 @@ import { Router } from "express"
 import getDb from "../lib/db.js"
 import { ObjectId } from "mongodb"
 import getConfig from "../lib/config.js"
+import { myContract, web3 } from '../lib/misc.js';
 
 export const routes = Router()
 
@@ -43,6 +44,34 @@ routes.route('/tasks/:taskId/submissions').get(async (req, res) => {
     taskId: taskId
   }).sort({ _id: 1 }).toArray()
   res.json(submissions)
+})
+
+routes.route('/test-sc-call').get(async (req, res) => {
+
+  if ((await getConfig()).develop !== true) {
+    res.json("not allowed in prod mode")
+  }
+
+  const account = web3.eth.accounts.privateKeyToAccount((await getConfig()).eth_private_key);
+  console.log(account)
+
+  var encodedABI = myContract.methods.createTask('pasta', 1, 9999999999999, 1).encodeABI()
+
+  var txn = {
+    from: account.address,
+    to: myContract.options.address,
+    gas: 500000,
+    data: encodedABI,
+  };
+  console.log('txn: ', txn)
+
+  var signed = await account.signTransaction(txn)
+  console.log(signed)
+
+  var sendRes = await web3.eth.sendSignedTransaction(signed.rawTransaction)
+
+  res.json(sendRes)
+
 })
 
 export default routes
