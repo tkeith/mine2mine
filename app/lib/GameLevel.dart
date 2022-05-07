@@ -10,7 +10,8 @@ Function? recordStart ;
 Function? recordStop ;
 
 class GameLevel extends StatefulWidget {
-  const GameLevel({Key? key}) : super(key: key);
+  final int? gameSpeed;
+  const GameLevel({Key? key, this.gameSpeed}) : super(key: key);
 
   @override
   State<GameLevel> createState() => _GameLevelState();
@@ -105,7 +106,10 @@ class _GameLevelState extends State<GameLevel> {
             alignment: Alignment.center,),
           Bubbles( key: ObjectKey("1"),
             completionCallback: (){},
+            generating_rate: widget.gameSpeed!.toDouble() * 0.005,
           ),
+
+
           // GestureDetector(
           //   // TODO only when aiming
           //   onTapDown: (TapDownDetails details){
@@ -135,7 +139,7 @@ class _GameLevelState extends State<GameLevel> {
                 child: Image.asset("aim.png"),
               )
           ) : Container(),
-          recording ? const Icon( Icons.record_voice_over ) : Container(),
+          recording ? const Icon( Icons.record_voice_over, size: 50, ) : Container(),
         ],
       ),
 

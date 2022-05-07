@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 class Bubbles extends StatefulWidget {
   final bubblestate = _BubblesState();
   final Key? key;
-  final double generating_rate = 0.01;
+  final double? generating_rate;
   Offset? aimPosition;
   final Function? completionCallback;
-  Bubbles({this.key, this.aimPosition , this.completionCallback});
+  Bubbles({this.key, this.aimPosition , this.completionCallback, this.generating_rate});
 
   @override
   State<StatefulWidget> createState() {
@@ -50,7 +50,7 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
     super.initState();
     // Init animation controller
     _controller = AnimationController(
-        duration: const Duration(seconds: 10), vsync: this);
+        duration: const Duration(seconds: 300), vsync: this);
     _controller!.addListener(() {
       updateSlimeStatus();
     });
@@ -60,8 +60,10 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // _controller = AnimationController(
+      //     duration: const Duration(seconds: 10), vsync: this);
       _controller = AnimationController(
-          duration: const Duration(seconds: 10), vsync: this);
+          duration: const Duration(seconds: 300), vsync: this);
       _controller!.addListener(() {
         updateSlimeStatus();
       });
@@ -85,13 +87,19 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
   }
 
   void updateSlimeStatus() {
+
     if (_controller == null) {
       dispose();
     }
     var rng = Random();
-    if( rng.nextDouble() < widget.generating_rate ){
-      bubbles.add( Bubble(Offset( rng.nextDouble() * width, rng.nextDouble() * height ),color, maxBubbleSize) );
+    if( rng.nextDouble() < widget.generating_rate! ){
+      if( bubbles.length < 20 ){
+        bubbles.add( Bubble(Offset( rng.nextDouble() * width, rng.nextDouble() * height ),color, maxBubbleSize) );
+      }
     }
+    bubbles.forEach((element) {
+      element.updateLifeSpan();
+    });
 
     setState(() {});
   }
@@ -107,6 +115,7 @@ class Bubble {
   late double direction;
   late double speed;
   late double radius;
+  late int lifespan;
   double x = 0;
   double y = 0;
   double? opacity;
@@ -121,6 +130,16 @@ class Bubble {
     this.x = initPosition.dx;
     this.y = initPosition.dy;
     this.opacity = 1.0;
+    this.lifespan = 0;
+  }
+
+  void updateLifeSpan(){
+    // TODO updateLifeSpan, or update status
+    // print("updateLifeSpan " + this.lifespan.toString());
+    this.lifespan = this.lifespan + 1;
+    if( lifespan >= 400 ){
+      // TODO aim failed!
+    }
   }
 
   Widget getWidget() {
@@ -137,10 +156,14 @@ class Bubble {
             recordStop!();
             _BubblesState.removeBubbleById(this.id);
           },
-        child: SizedBox(
-          width: 100,
-          height: 100,
-          child: Image.asset("check.png"),
+        child: Stack(
+          children: [
+            SizedBox(
+              width: 120,
+              height: 120,
+              child: (this.lifespan <= 200) ? Image.asset("FreshSpawn.gif") : Image.asset("SecondSpawn.gif"),
+            ),
+          ],
         ),
       ),
       top: y,
