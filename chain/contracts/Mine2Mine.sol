@@ -65,6 +65,7 @@ contract Mine2Mine {
     Task storage task = tasks[taskId];
 
     // here, we should transfer `task.bid` of USDC from `task.creator` to `msg.sender`
+    USDC.transferFrom(task.creator, msg.sender, task.bid);
 
     task.numberOfSubmissions += 1;
     uint256 submissionId = task.numberOfSubmissions;
