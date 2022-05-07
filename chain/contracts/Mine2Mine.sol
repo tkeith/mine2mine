@@ -73,7 +73,7 @@ contract Mine2Mine {
     submission.creator = msg.sender;
     submission.ipfsHash = ipfsHash;
 
-    tasks.remainingQuantity -= 1;
+    task.remainingQuantity -= 1;
 
     emit SubmissionCreated(taskId, submissionId, msg.sender, ipfsHash);
 
