@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,4 +50,43 @@ Future<List<dynamic>> getAllTasks() async {
   // } else {
   //   print(body['message']);
   // }
+}
+
+
+Future<String> localPath() async {
+  final directory = await getApplicationDocumentsDirectory();
+
+  return directory.path;
+}
+
+Future<File> localFile(String name) async {
+  final path = await localPath();
+  return File('$path'+ "/" + name);
+}
+
+Future<Uint8List?> readFileByte(String filePath) async {
+  Uri myUri = Uri.parse(filePath);
+  File audioFile = new File.fromUri(myUri);
+  Uint8List? bytes;
+  await audioFile.readAsBytes().then((value) {
+    bytes = Uint8List.fromList(value);
+    print('reading of bytes is completed');
+  }).catchError((onError) {
+    print('Exception Error while reading audio from path:' +
+        onError.toString());
+  });
+  return bytes;
+}
+
+
+Future<bool> sendrawdataToServer(Uint8List data) async{
+  Map _json = {
+    "audio": data.toString()
+  };
+
+  String _url = 'https://mine2mine.tk.co/express/ipfsUpload';
+  String reply = await apiRequest(_url, _json);
+  final body = json.decode(reply);
+  print(body.toString());
+  return true;
 }

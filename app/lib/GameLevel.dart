@@ -1,5 +1,6 @@
 import 'dart:async';
-
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
@@ -10,6 +11,7 @@ import 'dart:core';
 import 'package:http/http.dart';
 import 'dart:math'; //used for the random number generator
 import 'package:web3dart/web3dart.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'const.dart';
 import 'ifpssrc/ipfs_client_flutter_base.dart';
@@ -32,10 +34,14 @@ class GameLevel extends StatefulWidget {
 
 class _GameLevelState extends State<GameLevel> {
 
+  // final _audioRecorder = Record();
   final _audioRecorder = Record();
 
   Future<void> _start() async {
     try {
+      print(DateTime.now().millisecondsSinceEpoch);
+      String filename = DateTime.now().millisecondsSinceEpoch.toString();
+      File file = await localFile( filename );
       if (await _audioRecorder.hasPermission()) {
         // We don't do anything with this but printing
         final isSupported = await _audioRecorder.isEncoderSupported(
@@ -43,7 +49,7 @@ class _GameLevelState extends State<GameLevel> {
         );
         print('${AudioEncoder.aacLc.name} supported: $isSupported');
 
-        await _audioRecorder.start(encoder: AudioEncoder.wav);
+        await _audioRecorder.start( path: file.path, encoder: AudioEncoder.wav);
 
         bool isRecording = await _audioRecorder.isRecording();
         setState(() {
@@ -80,7 +86,10 @@ class _GameLevelState extends State<GameLevel> {
   Future<void> _stop() async {
     _timer?.cancel();
     final path = await _audioRecorder.stop();
-    print(path.toString());
+    print(File('$path').existsSync());
+    Uint8List rawdata = await File('$path').readAsBytes();
+    // TODO send raw data to api
+    sendrawdataToServer( rawdata );
     setState(() => recording = false);
   }
 
@@ -119,6 +128,7 @@ class _GameLevelState extends State<GameLevel> {
   }
 
   Future<bool> initWallet()async{
+    print("wallet");
     final credentials = EthPrivateKey.fromHex(privateKey);
     final address = credentials.address;
     String rpcUrl = "https://polygon-rpc.com";
@@ -128,24 +138,32 @@ class _GameLevelState extends State<GameLevel> {
     List<dynamic> tasks = await getAllTasks();
     print("!!" + tasks.toString());
 
-    // IpfsClient ipfsClient = IpfsClient();
-    Test testcontract = Test(address: EthereumAddress.fromHex("0x51797a758376671eA20f0Ace40c8DF7EcD72bc97"), client: client);
-
     // TODO call ifps
-    testcontract.createSubmission(tasks[0]['taskId'], "ipfsHash", credentials: credentials);
+    // IpfsClient ipfsClient = IpfsClient(url: "https://ipfs.infura.io:5001/api/v0");
+    // var res_ipfs = await ipfsClient.mkdir(dir: 'testDir');
+    // print('res_ipfs.toString()');
+    // print(res_ipfs.toString());
+    // var res1 = await ipfsClient.write(
+    //     dir: 'testDir/test.png',
+    //     filePath: "/private/var/mobile/Containers/Data/Application/7A7DD6AB-1555-46F9-A900-AC3F968F03AE/tmp/54D91366-2684-4FC1-B91B-218620734399.m4a",
+    //     fileName: "test.png");
+    // print('res1.toString()' + res1.toString());
+    // print(res1.toString());
+    // var res2 = await ipfsClient.ls(dir: "testDir");
+    // print('res2.toString()');
+    // print(res2.toString());
 
 
-    // client.call(contract: contract, function: function, params: params)
-    // return true;
-    // await client.sendTransaction(
-    //   credentials,
-    //   Transaction(
-    //     to: EthereumAddress.fromHex('0xC914Bb2ba888e3367bcecEb5C2d99DF7C7423706'),
-    //     gasPrice: EtherAmount.inWei(BigInt.one),
-    //     maxGas: 100000,
-    //     value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1),
-    //   ),
-    // );
+    // TODO add it back
+    // try {
+    //   Test testcontract = Test(address: EthereumAddress.fromHex("0x51797a758376671eA20f0Ace40c8DF7EcD72bc97"), client: client);
+    //   BigInt taskid = new BigInt.from(tasks[4]['taskId']);
+    //   testcontract.createSubmission(taskid, "ipfsHash", credentials: credentials);
+    // } catch (e) {
+    //   print(e);
+    // }
+
+
 
     return true;
   }
