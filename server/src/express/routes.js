@@ -35,9 +35,10 @@ routes.route('/allTasks').get(async (req, res) => {
 })
 
 
-routes.route('/tasks/:taskid/submissions').get(async (req, res) => {
+routes.route('/tasks/:taskId/submissions').get(async (req, res) => {
   const db = await getDb()
   const taskId = parseInt(req.params.taskId)
+  console.log('finding submissions for taskId: ', taskId)
   const submissions = await db.collection('submissions').find({
     taskId: taskId
   }).sort({ _id: 1 }).toArray()
