@@ -1,10 +1,16 @@
 import 'dart:async';
 
+import 'package:app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 
 import 'SlimeFactory.dart';
 import 'dart:core';
+import 'package:http/http.dart';
+import 'dart:math'; //used for the random number generator
+import 'package:web3dart/web3dart.dart';
+const privateKey = "26dd62ddab48780847376fc95e0a8d635206126242b8d2e549d7f14255ce943c";
+
 
 Function? recordStart ;
 Function? recordStop ;
@@ -88,6 +94,33 @@ class _GameLevelState extends State<GameLevel> {
     aimDx = 0 ;
     aimDy = 0;
     slimeList = [];
+    initWallet();
+  }
+
+
+
+  Future<bool> initWallet()async{
+    final credentials = EthPrivateKey.fromHex(privateKey);
+    final address = credentials.address;
+    String rpcUrl = "https://polygon-rpc.com";
+    final client = Web3Client(rpcUrl, Client());
+    print(address.hexEip55);
+    var res = await client.getBalance(address);
+    List<dynamic> tasks = await getAllTasks();
+    print("!!" + tasks.toString());
+    print("!!" + tasks.length.toString());
+    print(res.toString());
+    await client.sendTransaction(
+      credentials,
+      Transaction(
+        to: EthereumAddress.fromHex('0xC914Bb2ba888e3367bcecEb5C2d99DF7C7423706'),
+        gasPrice: EtherAmount.inWei(BigInt.one),
+        maxGas: 100000,
+        value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1),
+      ),
+    );
+
+    return true;
   }
 
 
@@ -107,6 +140,7 @@ class _GameLevelState extends State<GameLevel> {
           Bubbles( key: ObjectKey("1"),
             completionCallback: (){},
             generating_rate: widget.gameSpeed!.toDouble() * 0.005,
+            tasksInfo: ["asdf", "asdf1", "asdf2"],
           ),
 
 

@@ -10,7 +10,8 @@ class Bubbles extends StatefulWidget {
   final double? generating_rate;
   Offset? aimPosition;
   final Function? completionCallback;
-  Bubbles({this.key, this.aimPosition , this.completionCallback, this.generating_rate});
+  List<dynamic>? tasksInfo = [];
+  Bubbles({this.key, this.aimPosition , this.completionCallback, this.generating_rate, this.tasksInfo});
 
   @override
   State<StatefulWidget> createState() {
@@ -54,6 +55,11 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
     _controller!.addListener(() {
       updateSlimeStatus();
     });
+    // clear all bubbles.
+    bubbles = [];
+    Bubble.nBubble = 0;
+    healthPoint = 100.0;
+    moneyCollected = 0.0;
     play();
   }
 
@@ -76,13 +82,21 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  double healthPoint = 100.0;
+  double moneyCollected = 0.0;
+
   @override
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width * 0.9 ;
     height = MediaQuery.of(context).size.height * 0.9 ;
 
     return Stack(
-      children: bubbles.map((e) => e.getWidget()).toList(),
+      children: [
+        Stack(
+            children: bubbles.map((e) => e.getWidget()).toList()
+        ),
+
+      ],
     );
   }
 
@@ -94,7 +108,26 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
     var rng = Random();
     if( rng.nextDouble() < widget.generating_rate! ){
       if( bubbles.length < 20 ){
-        bubbles.add( Bubble(Offset( rng.nextDouble() * width, rng.nextDouble() * height ),color, maxBubbleSize) );
+        double aWidth = rng.nextDouble() * width;
+        if( aWidth <= 50 ) {
+          aWidth = 50;
+        }
+        if( aWidth >= width - 50 ){
+          aWidth = width - 50;
+        }
+        double aHeight = rng.nextDouble() * height;
+        if( aHeight <= 50 ) {
+          aHeight = 50;
+        }
+        if( aHeight >= height - 50 ){
+          aHeight = height - 50;
+        }
+        print("!!!" + widget.tasksInfo.toString());
+        print(Bubble.nBubble.toString());
+        if( widget.tasksInfo!.length > Bubble.nBubble ){
+          bubbles.add( Bubble(Offset( aWidth, aHeight ),color, maxBubbleSize, widget.tasksInfo![ Bubble.nBubble ]) );
+        }
+
       }
     }
     bubbles.forEach((element) {
@@ -116,11 +149,12 @@ class Bubble {
   late double speed;
   late double radius;
   late int lifespan;
+  dynamic taskInfo;
   double x = 0;
   double y = 0;
   double? opacity;
 
-  Bubble(Offset initPosition, Color colour, double maxBubbleSize) {
+  Bubble(Offset initPosition, Color colour, double maxBubbleSize, dynamic _taskInfo) {
     Bubble.nBubble = Bubble.nBubble + 1;
     this.id = Bubble.nBubble;
     this.colour = colour.withOpacity(Random().nextDouble());
@@ -131,6 +165,7 @@ class Bubble {
     this.y = initPosition.dy;
     this.opacity = 1.0;
     this.lifespan = 0;
+    this.taskInfo = _taskInfo;
   }
 
   void updateLifeSpan(){
@@ -155,13 +190,31 @@ class Bubble {
           onTapCancel: (){
             recordStop!();
             _BubblesState.removeBubbleById(this.id);
+
           },
-        child: Stack(
+        child: Column(
           children: [
+            Container(
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(
+                    color: Colors.white,
+                  ),
+                  borderRadius: BorderRadius.all(Radius.circular(20))
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: DefaultTextStyle(
+                  style: TextStyle(fontSize: 20, color: Colors.black),
+                  child: Text(taskInfo.toString()),
+                ) ,
+              )
+
+            ),
             SizedBox(
               width: 120,
               height: 120,
-              child: (this.lifespan <= 200) ? Image.asset("FreshSpawn.gif") : Image.asset("SecondSpawn.gif"),
+              child: (this.lifespan <= 300) ? Image.asset("FreshSpawn.gif") : this.lifespan <= 600 ? Image.asset("SecondSpawn.gif") : Image.asset("Spawn3.gif") ,
             ),
           ],
         ),
