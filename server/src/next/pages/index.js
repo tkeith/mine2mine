@@ -6,10 +6,10 @@ import { paymentTokenMultiplier, ABI, CONTRACT_ADDRESS } from '../../lib/misc.js
 import { useSendTransaction, useContractFunction } from '@usedapp/core'
 import Web3 from 'web3'
 import React, { useState, useEffect } from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
+let updateTasks
 
-let updateTasks = function (tasks) { }
-
-function TasksTable() {
+export function TasksTable() {
 
   const [tasks, _updateTasks] = useState([])
 
@@ -21,6 +21,16 @@ function TasksTable() {
     return () => updateTasks = null
   })
 
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = (taskId) => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
 
   const rows = tasks.map((task) =>
     <tr key={ task.taskId }>
@@ -28,6 +38,33 @@ function TasksTable() {
       <td>{task.bid}</td>
       <td>{task.originalQuantity}</td>
       <td>{task.remainingQuantity}</td>
+      <td>
+        <Button variant='outlined' onClick={() => handleClickOpen(task.taskId)}>Submission</Button>
+        <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Task Information"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+           User Address: {task.creator}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+        <Button onClick={handleClose} autoFocus>
+            Download Audio
+          </Button>
+          <Button onClick={handleClose} autoFocus>
+            Okay
+          </Button>
+          
+        </DialogActions>
+      </Dialog>
+      </td>
     </tr>
   )
 
@@ -83,9 +120,9 @@ export default function MainPage() {
   }
 
   async function populateNewTasks () {
-
-    updateTasks(await getTasks())
-
+    if (updateTasks) {
+      updateTasks(await getTasks())
+    }
   }
 
   useEffect(() => {
@@ -94,8 +131,8 @@ export default function MainPage() {
   )
 
   return (
-    <div className='container mx-auto'>
-      <h3>New task</h3>
+    <div>
+
       {account ? <>
         <p>Account: {account}</p>
         <form onSubmit={createTask}>
@@ -104,14 +141,11 @@ export default function MainPage() {
           <TextInput label='Quantity' name='quantity' />
           <TextInput label='Duration of Bid (in seconds)' name='duration' />
           <SubmitButton>Create task</SubmitButton>
-          <SubmitButton>Submitting</SubmitButton>
         </form>
-      </> : <div>
+      </>  :<div>
         <TextButton onClick={() => activateBrowserWallet()}>Connect wallet</TextButton>
       </div>}
-
-      <h3>Tasks</h3>
-      <TasksTable />
+      
     </div>
   )
 }
