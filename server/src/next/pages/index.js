@@ -19,7 +19,7 @@ export default function MainPage() {
     contract.methods.createTask(event.target.text.value, Math.floor(parseFloat(event.target.bid.value) * paymentTokenMultiplier), Math.floor(Date.now() / 1000 + parseInt(event.target.duration.value)), parseInt(event.target.quantity.value)
     ).send({
       from: account,
-      gasPrice: '30000000000'
+      gasPrice: '40000000000'
     }).on('receipt', (receipt) => {
       console.log(receipt)
       Router.reload()
