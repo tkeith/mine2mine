@@ -26,10 +26,10 @@ export function SubmitButton({ children }) {
 
 export function TextInput({ label, placeholder, helpText, defaultValue, name }) {
   return <div className="form-group mb-6">
-    <label htmlFor={name} className="form-label inline-block mb-2 text-gray-700">{label}</label>
+    <label htmlFor={name} className="form-label inline-block mb-2 ml-10text-gray-700">{label}</label>
     <input type="text" className="form-control
           block
-          w-full
+          w-1/8
           px-3
           py-1.5
           text-base

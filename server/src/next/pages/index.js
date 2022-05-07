@@ -28,17 +28,18 @@ export default function MainPage() {
       console.log(error)
     })
   }
-
+ 
   return (
-    <div className='container mx-auto'>
+    <div>
       {account ? <>
         <p>Account: {account}</p>
         <form onSubmit={createTask}>
           <TextInput label='Text' name='text' />
           <TextInput label='Bid' name='bid' />
           <TextInput label='Quantity' name='quantity' />
-          <TextInput label='Duration (in seconds)' name='duration' />
+          <TextInput label='Duration of Bid (in seconds)' name='duration' />
           <SubmitButton>Create task</SubmitButton>
+          <SubmitButton>Submitting</SubmitButton>
         </form>
       </> : <div>
         <TextButton onClick={() => activateBrowserWallet()}>Connect wallet</TextButton>
