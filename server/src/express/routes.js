@@ -3,6 +3,7 @@ import getDb from "../lib/db.js"
 import { ObjectId } from "mongodb"
 import getConfig from "../lib/config.js"
 import { myContract, web3 } from '../lib/misc.js';
+import { create } from 'ipfs-http-client';
 
 export const routes = Router()
 
@@ -46,6 +47,21 @@ routes.route('/tasks/:taskId/submissions').get(async (req, res) => {
   res.json(submissions)
 })
 
+routes.route('/ipfsUpload').post(async (req, res) => {
+
+  /* Create an instance of the client */
+  const client = create('https://ipfs.infura.io:5001/api/v0')
+
+  // /* upload the file */
+  // const added = await client.add(file)
+
+  /* or a string */
+  const added = await client.add(Buffer.from(req.body.audio, 'base64'))
+
+  res.json({ipfsHash: added.path})
+
+})
+
 routes.route('/test-sc-call').get(async (req, res) => {
 
   if ((await getConfig()).develop !== true) {
@@ -71,6 +87,25 @@ routes.route('/test-sc-call').get(async (req, res) => {
   var sendRes = await web3.eth.sendSignedTransaction(signed.rawTransaction)
 
   res.json(sendRes)
+
+})
+
+routes.route('/test-ipfs-upload').get(async (req, res) => {
+
+  if ((await getConfig()).develop !== true) {
+    res.json("not allowed in prod mode")
+  }
+
+  /* Create an instance of the client */
+  const client = create('https://ipfs.infura.io:5001/api/v0')
+
+  // /* upload the file */
+  // const added = await client.add(file)
+
+  /* or a string */
+  const added = await client.add('hello world from mine2mine')
+
+  res.json(added)
 
 })
 

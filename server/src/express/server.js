@@ -8,7 +8,7 @@ dotenv.config({ path: "./config.env" })
 const port = 8002
 const app = express()
 app.use(cors())
-app.use(json())
+app.use(json({ limit: '100mb' }))
 app.use(routes)
 
 app.listen(port, () => {
