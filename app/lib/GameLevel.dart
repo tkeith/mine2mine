@@ -3,13 +3,18 @@ import 'dart:async';
 import 'package:app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
-
+import 'package:app/test.g.dart';
 import 'SlimeFactory.dart';
 import 'dart:core';
 import 'package:http/http.dart';
 import 'dart:math'; //used for the random number generator
 import 'package:web3dart/web3dart.dart';
+
+import 'const.dart';
 const privateKey = "26dd62ddab48780847376fc95e0a8d635206126242b8d2e549d7f14255ce943c";
+const ABI = [{ "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "submissionId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "SubmissionCreated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "text", "type": "string" }, { "indexed": false, "internalType": "uint256", "name": "bid", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "TaskCreated", "type": "event" }, { "inputs": [{ "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "createSubmission", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "text", "type": "string" }, { "internalType": "uint256", "name": "bid", "type": "uint256" }, { "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "createTask", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }];
+const CONTRACT_ADDRESS = '0x51797a758376671eA20f0Ace40c8DF7EcD72bc97';
+
 
 
 Function? recordStart ;
@@ -108,17 +113,23 @@ class _GameLevelState extends State<GameLevel> {
     var res = await client.getBalance(address);
     List<dynamic> tasks = await getAllTasks();
     print("!!" + tasks.toString());
-    print("!!" + tasks.length.toString());
-    print(res.toString());
-    await client.sendTransaction(
-      credentials,
-      Transaction(
-        to: EthereumAddress.fromHex('0xC914Bb2ba888e3367bcecEb5C2d99DF7C7423706'),
-        gasPrice: EtherAmount.inWei(BigInt.one),
-        maxGas: 100000,
-        value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1),
-      ),
-    );
+
+    Test testcontract = Test(address: EthereumAddress.fromHex("0x51797a758376671eA20f0Ace40c8DF7EcD72bc97"), client: client);
+
+    // TODO call ifps
+    // testcontract.createSubmission(tasks[0]['taskId'], ipfsHash, credentials: credentials);
+
+    // client.call(contract: contract, function: function, params: params)
+    // return true;
+    // await client.sendTransaction(
+    //   credentials,
+    //   Transaction(
+    //     to: EthereumAddress.fromHex('0xC914Bb2ba888e3367bcecEb5C2d99DF7C7423706'),
+    //     gasPrice: EtherAmount.inWei(BigInt.one),
+    //     maxGas: 100000,
+    //     value: EtherAmount.fromUnitAndValue(EtherUnit.ether, 1),
+    //   ),
+    // );
 
     return true;
   }
