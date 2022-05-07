@@ -42,6 +42,6 @@ routes.route('/users/:addr/getTask').get(async (req, res) => {
 //     )
 //     res.json(task)
 //   }
-})
+// })
 
 export default routes
