@@ -34,4 +34,14 @@ routes.route('/allTasks').get(async (req, res) => {
   res.json(tasks)
 })
 
+
+routes.route('/tasks/:taskid/submissions').get(async (req, res) => {
+  const db = await getDb()
+  const taskId = parseInt(req.params.taskId)
+  const submissions = await db.collection('submissions').find({
+    taskId: taskId
+  }).sort({ _id: 1 }).toArray()
+  res.json(submissions)
+})
+
 export default routes
