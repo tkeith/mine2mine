@@ -113,12 +113,12 @@ export default function MainPage() {
 
   const rows = tasks.map((task) =>
     <tr key={task.taskId}>
-      <td>{task.text}</td>
-      <td>{task.bid}</td>
-      <td>{task.originalQuantity}</td>
-      <td>{task.remainingQuantity}</td>
-      <td>{task.creator}</td>
-      <td><a href={'/tasks/' + task.taskId}>Submissions</a></td>
+      <td className='text-left p-2'>{task.taskId}</td>
+      <td className='text-left p-2'>{task.text}</td>
+      <td className='text-left p-2'>{task.bid}</td>
+      <td className='text-left p-2'>{task.originalQuantity}</td>
+      <td className='text-left p-2'>{task.remainingQuantity}</td>
+      <td className='text-left p-2'><a href={'/tasks/' + task.taskId}>Submissions</a></td>
     </tr>
   )
 
@@ -126,10 +126,11 @@ export default function MainPage() {
     <table>
       <thead>
         <tr>
-          <th>Text</th>
-          <th>Bid</th>
-          <th>Orig qty</th>
-          <th>Rem qty</th>
+          <th className='text-left p-2 w-48'>ID</th>
+          <th className='text-left p-2 w-48'>Text</th>
+          <th className='text-left p-2 w-48'>Bid</th>
+          <th className='text-left p-2 w-48'>Orig qty</th>
+          <th className='text-left p-2 w-48'>Rem qty</th>
         </tr>
       </thead>
       <tbody>
@@ -139,13 +140,12 @@ export default function MainPage() {
   )
 
   return <>
-    <div className='bg-gradient-to-t from-cyan-900 to-zinc-700 h-screen'>
-      <div className='justify-center  items-center flex'>
-          <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
+    <div className='bg-gradient-to-t from-cyan-900 to-zinc-700 text-white'>
+      <div style={{ width: '800px', margin: '0 auto', padding: '100px', border: 'solid 1px gray', padding: '20px' }}>
           <div>
 
             {account ? <>
-              <p>Account: {account}</p>
+            <h1 className='text-xl'>Account: {account}</h1>
               <p className='h-2'></p>
               <p>
               <TextButton onClick={() => setupApproval()}>Setup USDC Approval</TextButton>
@@ -165,11 +165,10 @@ export default function MainPage() {
 
             </div>
           </div>
-          <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
-              <h1>Tasks</h1>
+      <div style={{ width: '800px', margin: '0 auto', padding: '100px', border: 'solid 1px gray', padding: '20px' }}>
+              <h1 className='text-xl'>Tasks</h1>
           {table}
           </div>
       </div>
-    </div>
   </>
 }

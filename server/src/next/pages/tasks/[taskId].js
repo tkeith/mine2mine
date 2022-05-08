@@ -25,16 +25,27 @@ const TaskPage = () => {
   }, [router.isReady])
 
   const rows = info.subs.map((sub) =>
-  <p><span>{sub.creator}</span><span>{sub.ipfsHash}</span></p>)
+    <tr><td className='p-4'>{sub.submissionId}</td><td className='p-4'>{sub.creator}</td><td className='p-4'><a href={'https://ipfs.io/ipfs/' + sub.ipfsHash}>IPFS Audio File</a></td></tr>)
 
   return (
+
     <div className='bg-gradient-to-t from-cyan-900 to-zinc-700 h-screen text-white'>
+      <div style={{ width: '800px', margin: '0 auto', padding: '100px', border: 'solid 1px gray', padding: '20px' }}>
 
-        <div className=' text-center'>
             <h1>Task Number: {taskId}</h1>
+        <table>
+          <thead>
+            <tr>
+              <th className='p-4'>ID</th>
+              <th className='p-4'>Creator</th>
+              <th className='p-4'>IPFS Audio File</th>
+            </tr>
+          </thead>
+          <tbody>
             {rows}
+          </tbody>
+        </table>
         </div>
-
     </div>
 
   )
