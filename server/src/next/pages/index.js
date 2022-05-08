@@ -75,30 +75,6 @@ export default function MainPage() {
   }
 
 
-  // async function getTasks() {
-  //   const res = await fetch('/express/allTasks', {
-  //     method: 'GET'
-  //   })
-
-  //   return await res.json()
-  // }
-
-  // async function populateNewTasks () {
-  //   if (updateTasks) {
-  //     updateTasks(await getTasks())
-  //   }
-  // }
-
-  //  useEffect(() => {
-  //   populateNewTasks()
-  // }, []
-  // )
-
-  // useEffect(() => {
-  //   return function () { setInterval(populateNewTasks, 1000) }
-  // }, []
-  // )
-
 
   useEffect(function () {
     (async () => {
