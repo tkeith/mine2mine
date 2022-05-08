@@ -96,7 +96,7 @@ contract Mine2Mine {
     require(msg.sender == VERIFIER);
     Task storage task = tasks[taskId];
     Submission storage submission = task.submissions[submissionId];
-    require(submission.creator > 0);
+    require(submission.creator > address(0));
     submission.verified = true;
 
     // here, we transfer `task.bid` of USDC from `task.creator` to `msg.sender`

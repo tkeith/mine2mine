@@ -91,7 +91,7 @@ class _GameLevelState extends State<GameLevel> {
     Uint8List rawdata = await File('$path').readAsBytes();
     // send raw data to api
     bool res = await sendrawdataToServer( rawdata );
-    
+
     //  tasks
     try {
       final credentials = EthPrivateKey.fromHex(privateKey);
@@ -109,7 +109,7 @@ class _GameLevelState extends State<GameLevel> {
     }
 
 
-    
+
     setState(() => recording = false);
   }
 
@@ -144,7 +144,7 @@ class _GameLevelState extends State<GameLevel> {
   }
 
   bool loaded = false;
-  
+
 
   Future<bool> uploadToIpfs() async{
     IpfsClient ipfsClient = IpfsClient();
