@@ -6,10 +6,9 @@ import { paymentTokenMultiplier, ABI, CONTRACT_ADDRESS } from '../../lib/misc.js
 import { useSendTransaction, useContractFunction } from '@usedapp/core'
 import Web3 from 'web3'
 import React, { useState, useEffect } from 'react';
+let updateTasks
 
-let updateTasks = function (tasks) { }
-
-function TasksTable() {
+export function TasksTable() {
 
   const [tasks, _updateTasks] = useState([])
 
@@ -21,13 +20,13 @@ function TasksTable() {
     return () => updateTasks = null
   })
 
-
   const rows = tasks.map((task) =>
     <tr key={ task.taskId }>
       <td>{task.text}</td>
       <td>{task.bid}</td>
       <td>{task.originalQuantity}</td>
       <td>{task.remainingQuantity}</td>
+      <td>{task.creator}</td>
       <td><a href={'/tasks/' + task.taskId}>Submissions</a></td>
     </tr>
   )
@@ -79,14 +78,14 @@ export default function MainPage() {
     const res = await fetch('/express/allTasks', {
       method: 'GET'
     })
-
+  
     return await res.json()
   }
 
   async function populateNewTasks () {
-
-    updateTasks(await getTasks())
-
+    if (updateTasks) {
+      updateTasks(await getTasks())
+    }
   }
 
   useEffect(() => {
@@ -94,25 +93,32 @@ export default function MainPage() {
   }, []
   )
 
-  return (
-    <div className='container mx-auto'>
-      <h3>New task</h3>
-      {account ? <>
-        <p>Account: {account}</p>
-        <form onSubmit={createTask}>
-          <TextInput label='Text' name='text' />
-          <TextInput label='Bid' name='bid' />
-          <TextInput label='Quantity' name='quantity' />
-          <TextInput label='Duration of Bid (in seconds)' name='duration' />
-          <SubmitButton>Create task</SubmitButton>
-          <SubmitButton>Submitting</SubmitButton>
-        </form>
-      </> : <div>
-        <TextButton onClick={() => activateBrowserWallet()}>Connect wallet</TextButton>
-      </div>}
+  return <> 
+    <div className='bg-gradient-to-t from-cyan-900 to-zinc-700 h-screen'>
+      <div className='justify-center  items-center flex'>
+          <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
+          <div>
 
-      <h3>Tasks</h3>
-      <TasksTable />
+            {account ? <>
+              <p>Account: {account}</p>
+              <form onSubmit={createTask}>
+                <TextInput label='Text' name='text' />
+                <TextInput label='Bid' name='bid' />
+                <TextInput label='Quantity' name='quantity' />
+                <TextInput label='Duration of Bid (in seconds)' name='duration' />
+                <SubmitButton>Create task</SubmitButton>
+              </form>
+            </>  :<div>
+              <TextButton onClick={() => activateBrowserWallet()}>Connect wallet</TextButton>
+            </div>}
+
+            </div>
+          </div>
+          <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
+              <h1>Tasks</h1>
+              <TasksTable />
+          </div>
+      </div>
     </div>
-  )
+  </>
 }

@@ -38,6 +38,9 @@ dependencies:
   web3dart: ^2.3.0
   shared_preferences: ^2.0.13
   dio: ^4.0.6
+  firebase_storage: ^10.2.8
+  path_provider: ^2.0.9
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -72,6 +75,8 @@ flutter:
     - SecondSpawn.gif
     - Spawn3.gif
     - goldbars.png
+    - back_arrow.png
+    - cashout.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
