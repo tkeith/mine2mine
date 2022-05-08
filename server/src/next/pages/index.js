@@ -6,7 +6,7 @@ import { paymentTokenMultiplier, ABI, CONTRACT_ADDRESS } from '../../lib/misc.js
 import { useSendTransaction, useContractFunction } from '@usedapp/core'
 import Web3 from 'web3'
 import React, { useState, useEffect } from 'react';
-let updateTasks
+import { USDC_PROXY_ABI, USDC_CONTRACT_ADDRESS } from '../../lib/misc.js'
 
 
 export default function MainPage() {
@@ -15,6 +15,45 @@ export default function MainPage() {
 
   const [tasks, updateTasks] = useState([])
 
+
+  const setupApproval = async () => {
+    const mmWeb3 = new Web3(window.ethereum);
+    const contract = new mmWeb3.eth.Contract(USDC_PROXY_ABI, USDC_CONTRACT_ADDRESS)
+    // console.log("Calling allowance: ")
+    // await contract.methods.allowance(
+    //   account, // owner
+    //   USDC_CONTRACT_ADDRESS, // spender:
+    // ).call(function (error, result) {
+    //   console.log("Result from allowance check: ", result)
+    //   if (result === 0) {
+    //     contract.methods.approve(
+    //       USDC_CONTRACT_ADDRESS,
+    //       100000000000
+    //     ).send({
+    //       from: account,
+    //       gasPrice: '40000000000'
+    //     }).on('receipt', (receipt) => {
+    //       console.log("CONTRACT RESPONSE>>>", receipt)
+    //     }).catch((error) => {
+    //       alert('error - see console')
+    //       console.log(error)
+    //     })
+    //   }
+    // })
+    contract.methods.approve(
+      CONTRACT_ADDRESS,
+      100000000000
+    ).send({
+      from: account,
+      gasPrice: '40000000000'
+    }).on('receipt', (receipt) => {
+      console.log("CONTRACT RESPONSE>>>", receipt)
+    }).catch((error) => {
+      alert('error - see console')
+      console.log(error)
+    })
+
+  }
 
   const createTask = async event => {
     event.preventDefault()
@@ -107,6 +146,12 @@ export default function MainPage() {
 
             {account ? <>
               <p>Account: {account}</p>
+              <p className='h-2'></p>
+              <p>
+              <TextButton onClick={() => setupApproval()}>Setup USDC Approval</TextButton>
+              </p>
+              <p className='h-2'></p>
+
               <form onSubmit={createTask}>
                 <TextInput label='Text' name='text' />
                 <TextInput label='Bid' name='bid' />

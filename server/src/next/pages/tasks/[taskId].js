@@ -6,9 +6,10 @@ import { useEffect, useState } from "react";
 const TaskPage = () => {
   const router = useRouter()
   const { taskId } = router.query
-  
+
   let [info, setInfo] = useState({subs: []})
   useEffect(function () {
+    if (!router.isReady) return;
     (async () => {
       //alert('getting taskId: ' + taskId)
       const res = await (await fetch('https://mine2mine.tk.co/express/tasks/'+ taskId + '/submissions', {
@@ -18,12 +19,12 @@ const TaskPage = () => {
       // const submissionId = res.submissionId
       // const creator = res.creator
       // const ipfsHash = res.ipfsHash
-  
+
       setInfo({subs: res})
     })()
-  }, [])
+  }, [router.isReady])
 
-  const rows = info.subs.map((sub) => 
+  const rows = info.subs.map((sub) =>
   <p><span>{sub.creator}</span><span>{sub.ipfsHash}</span></p>)
 
   return (
@@ -33,9 +34,9 @@ const TaskPage = () => {
             <h1>Task Number: {taskId}</h1>
             {rows}
         </div>
-      
+
     </div>
-  
+
   )
 }
 
