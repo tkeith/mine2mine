@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb"
 import getConfig from "../lib/config.js"
 import { myContract, web3 } from '../lib/misc.js';
 import { create } from 'ipfs-http-client';
+import { randomWord } from "../lib/words.js";
 
 export const routes = Router()
 
@@ -32,7 +33,23 @@ routes.route('/users/:addr/getTask').get(async (req, res) => {
 routes.route('/allTasks').get(async (req, res) => {
   const db = await getDb()
   const tasks = await db.collection('tasks').find({
-  }).sort({ 'bid': -1 }).limit(20).toArray()
+  }).sort({ '_id': -1 }).limit(20).toArray()
+  res.json(tasks)
+})
+
+routes.route('/allTasksNoLimit').get(async (req, res) => {
+  const db = await getDb()
+  const tasks = await db.collection('tasks').find({
+  }).sort({ '_id': -1 }).toArray()
+  res.json(tasks)
+})
+
+routes.route('/myTasks/:addr').get(async (req, res) => {
+  const addr = req.params.addr
+  const db = await getDb()
+  const tasks = await db.collection('tasks').find({
+    owner: addr,
+  }).sort({ '_id': -1 }).toArray()
   res.json(tasks)
 })
 
@@ -47,6 +64,80 @@ routes.route('/tasks/:taskId/submissions').get(async (req, res) => {
   res.json(submissions)
 })
 
+
+routes.route('/getVerifyTask').get(async (req, res) => {
+  function shuffle(array) {
+    let currentIndex = array.length, randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+
+      // Pick a remaining element.
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+
+      // And swap it with the current element.
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+  }
+
+  const db = await getDb()
+  const submission = await db.collection('submissions').findOne({ verified: false, inVerification: false })
+  if (submission) {
+    // db.collection('submissions').updateMany({ submissionId: submission.submissionId }, { $set: { inVerification: true } })
+    const text = (await db.collection('tasks').findOne({ taskId: submission.taskId })).text
+    let options = [text, randomWord(), randomWord(), randomWord()]
+    shuffle(options)
+    res.json({
+      taskId: submission.taskId,
+      submissionId: submission.submissionId,
+      ipfsHash: submission.ipfsHash,
+      options: options
+    })
+  } else {
+    res.json(null)
+  }
+})
+
+routes.route('/verifyTask').post(async (req, res) => { // taskId, submissionId, answer
+  const db = await getDb()
+  const taskId = parseInt(req.params.taskId)
+  const submissionId = parseInt(req.params.submissionId)
+  const task = await db.collection('tasks').findOne({ taskId: taskId })
+  const submission = await db.collection('submission').findOne({ taskId: taskId, submissionId: submissionId })
+  if (submission.verified) {
+    res.json('already verified')
+  } else if (req.params.answer != task.text) {
+    res.json('incorrect')
+  } else {
+
+    const account = web3.eth.accounts.privateKeyToAccount((await getConfig()).eth_private_key);
+    console.log(account)
+
+    var encodedABI = myContract.methods.verifySubmission(taskId, submissionId).encodeABI()
+
+    var txn = {
+      from: account.address,
+      to: myContract.options.address,
+      gas: 800000,
+      data: encodedABI,
+    };
+    console.log('txn: ', txn)
+
+    var signed = await account.signTransaction(txn)
+    console.log(signed)
+
+    var sendRes = await web3.eth.sendSignedTransaction(signed.rawTransaction)
+
+    console.log(sendRes)
+
+    res.json('correct')
+  }
+})
+
 routes.route('/ipfsUpload').post(async (req, res) => {
 
   /* Create an instance of the client */
@@ -59,6 +150,82 @@ routes.route('/ipfsUpload').post(async (req, res) => {
   const added = await client.add(Buffer.from(req.body.audio, 'base64'))
 
   res.json({ipfsHash: added.path})
+
+})
+
+
+
+routes.route('/clear-lockout').get(async (req, res) => {
+
+  // if ((await getConfig()).develop !== true) {
+  //   res.json("not allowed in prod mode")
+  // }
+
+  const db = await getDb()
+
+  res.json({
+    res: await db.collection('tasks').updateMany(
+      {},
+      { $set: { completedBy: [] } }
+    )
+  })
+})
+
+
+routes.route('/clear-in-verification').get(async (req, res) => {
+
+  // if ((await getConfig()).develop !== true) {
+  //   res.json("not allowed in prod mode")
+  // }
+
+  const db = await getDb()
+
+  res.json({
+    res:  await db.collection('submissions').updateMany({  }, { $set: { inVerification: false } })
+
+  })
+})
+
+
+routes.route('/generate-tasks').get(async (req, res) => {
+
+  if ((await getConfig()).develop !== true) {
+    res.json("not allowed in prod mode")
+  }
+
+  for (let i = 0; i < 100; i++) {
+
+    setTimeout(async function () {
+      try {
+
+        const account = web3.eth.accounts.privateKeyToAccount((await getConfig()).eth_private_key);
+        console.log(account)
+
+        var encodedABI = myContract.methods.createTask(randomWord(), Math.floor(10000 + Math.random() * 10000), 9999999999999, 20).encodeABI()
+
+        var txn = {
+          from: account.address,
+          to: myContract.options.address,
+          gas: 500000,
+          data: encodedABI,
+        };
+        console.log('txn: ', txn)
+
+        var signed = await account.signTransaction(txn)
+        console.log(signed)
+
+        var sendRes = await web3.eth.sendSignedTransaction(signed.rawTransaction)
+
+        console.log(sendRes)
+      } catch (err) {
+        console.log(err)
+      }
+
+    }, 20000 * i)
+
+  }
+
+  res.json('complete')
 
 })
 

@@ -79,10 +79,11 @@ async function checkForNewEvents() {
         taskId: taskId,
         submissionId: submissionId,
         creator: creator,
-        ipfsHash: ipfsHash
+        ipfsHash: ipfsHash,
+        verified: false,
+        inVerification: false
       })
     }
-
   }
 }
 
