@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/material.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web3dart/web3dart.dart';
@@ -56,23 +57,21 @@ Future<List<dynamic>> getAllTasks() async {
   // }
 }
 
-Future<dynamic> getNextTask() async {
-  print("getNextTask" + myaddress.toString());
-  String _url = 'https://mine2mine.tk.co/express/users/' + myaddress! + '/getTask';
-  http.Response reply = await fetchTask(_url);
-  print(reply.body.runtimeType.toString());
-  dynamic singleTask = json.decode(reply.body);
-  print(singleTask.toString());
-  return singleTask;
-  // final body = json.decode(reply);
-  // print(body);
-  // if (body['status_code'] == 200) {
-  //   print("notify all friends about my post succeeded!");
-  //   return body;
-  // } else {
-  //   print(body['message']);
-  // }
+class Loading extends StatelessWidget {
+  const Loading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
+    );
+  }
 }
+
 
 
 
@@ -102,16 +101,34 @@ Future<Uint8List?> readFileByte(String filePath) async {
 }
 
 
-Future<bool> sendrawdataToServer(Uint8List data) async{
+Future<String> sendrawdataToServer(String data) async{
   Map _json = {
-    "audio": data.toString()
+    "audio": data
   };
 
   String _url = 'https://mine2mine.tk.co/express/ipfsUpload';
   String reply = await apiRequest(_url, _json);
   final body = json.decode(reply);
+  print("ipfsUpload");
   print(body.toString());
+  return body['ipfsHash'];
+}
 
 
-  return true;
+Future<dynamic> getNextTask() async {
+  print("getNextTask" + myaddress.toString());
+  String _url = 'https://mine2mine.tk.co/express/users/' + myaddress! + '/getTask';
+  http.Response reply = await fetchTask(_url);
+  print(reply.body.runtimeType.toString());
+  dynamic singleTask = json.decode(reply.body);
+  print(singleTask.toString());
+  return singleTask;
+  // final body = json.decode(reply);
+  // print(body);
+  // if (body['status_code'] == 200) {
+  //   print("notify all friends about my post succeeded!");
+  //   return body;
+  // } else {
+  //   print(body['message']);
+  // }
 }
