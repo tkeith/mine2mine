@@ -22,7 +22,9 @@ class Test extends _i1.GeneratedContract {
     final function = self.abi.functions[0];
     assert(checkSignature(function, 'a5e99c4e'));
     final params = [taskId, ipfsHash];
-    return write(credentials, transaction, function, params);
+    // return write(credentials, transaction, function, params);
+    String ret = await write(credentials, transaction, function, params);
+    return ret;
   }
 
   /// The optional [transaction] parameter can be used to override parameters
