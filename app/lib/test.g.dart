@@ -3,7 +3,7 @@
 import 'package:web3dart/web3dart.dart' as _i1;
 
 final _contractAbi = _i1.ContractAbi.fromJson(
-    '[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"submissionId","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"},{"indexed":false,"internalType":"string","name":"ipfsHash","type":"string"}],"name":"SubmissionCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"},{"indexed":false,"internalType":"string","name":"text","type":"string"},{"indexed":false,"internalType":"uint256","name":"bid","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"expiresAt","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"TaskCreated","type":"event"},{"inputs":[{"internalType":"uint256","name":"taskId","type":"uint256"},{"internalType":"string","name":"ipfsHash","type":"string"}],"name":"createSubmission","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"text","type":"string"},{"internalType":"uint256","name":"bid","type":"uint256"},{"internalType":"uint256","name":"expiresAt","type":"uint256"},{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"createTask","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"}]',
+    '[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"submissionId","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"},{"indexed":false,"internalType":"string","name":"ipfsHash","type":"string"},{"indexed":false,"internalType":"bool","name":"verified","type":"bool"}],"name":"SubmissionCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"submissionId","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"},{"indexed":false,"internalType":"string","name":"ipfsHash","type":"string"},{"indexed":false,"internalType":"bool","name":"verified","type":"bool"}],"name":"SubmissionVerified","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"taskId","type":"uint256"},{"indexed":false,"internalType":"address","name":"creator","type":"address"},{"indexed":false,"internalType":"string","name":"text","type":"string"},{"indexed":false,"internalType":"uint256","name":"bid","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"expiresAt","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"TaskCreated","type":"event"},{"inputs":[{"internalType":"uint256","name":"taskId","type":"uint256"},{"internalType":"string","name":"ipfsHash","type":"string"}],"name":"createSubmission","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"text","type":"string"},{"internalType":"uint256","name":"bid","type":"uint256"},{"internalType":"uint256","name":"expiresAt","type":"uint256"},{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"createTask","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"taskId","type":"uint256"},{"internalType":"uint256","name":"submissionId","type":"uint256"}],"name":"verifySubmission","outputs":[],"stateMutability":"nonpayable","type":"function"}]',
     'Test');
 
 class Test extends _i1.GeneratedContract {
@@ -22,9 +22,7 @@ class Test extends _i1.GeneratedContract {
     final function = self.abi.functions[0];
     assert(checkSignature(function, 'a5e99c4e'));
     final params = [taskId, ipfsHash];
-    // return write(credentials, transaction, function, params);
-    String ret = await write(credentials, transaction, function, params);
-    return ret;
+    return write(credentials, transaction, function, params);
   }
 
   /// The optional [transaction] parameter can be used to override parameters
@@ -40,6 +38,18 @@ class Test extends _i1.GeneratedContract {
     return write(credentials, transaction, function, params);
   }
 
+  /// The optional [transaction] parameter can be used to override parameters
+  /// like the gas price, nonce and max gas. The `data` and `to` fields will be
+  /// set by the contract.
+  Future<String> verifySubmission(BigInt taskId, BigInt submissionId,
+      {required _i1.Credentials credentials,
+      _i1.Transaction? transaction}) async {
+    final function = self.abi.functions[2];
+    assert(checkSignature(function, 'f29765bd'));
+    final params = [taskId, submissionId];
+    return write(credentials, transaction, function, params);
+  }
+
   /// Returns a live stream of all SubmissionCreated events emitted by this contract.
   Stream<SubmissionCreated> submissionCreatedEvents(
       {_i1.BlockNum? fromBlock, _i1.BlockNum? toBlock}) {
@@ -49,6 +59,18 @@ class Test extends _i1.GeneratedContract {
     return client.events(filter).map((_i1.FilterEvent result) {
       final decoded = event.decodeResults(result.topics!, result.data!);
       return SubmissionCreated(decoded);
+    });
+  }
+
+  /// Returns a live stream of all SubmissionVerified events emitted by this contract.
+  Stream<SubmissionVerified> submissionVerifiedEvents(
+      {_i1.BlockNum? fromBlock, _i1.BlockNum? toBlock}) {
+    final event = self.event('SubmissionVerified');
+    final filter = _i1.FilterOptions.events(
+        contract: self, event: event, fromBlock: fromBlock, toBlock: toBlock);
+    return client.events(filter).map((_i1.FilterEvent result) {
+      final decoded = event.decodeResults(result.topics!, result.data!);
+      return SubmissionVerified(decoded);
     });
   }
 
@@ -70,7 +92,8 @@ class SubmissionCreated {
       : taskId = (response[0] as BigInt),
         submissionId = (response[1] as BigInt),
         creator = (response[2] as _i1.EthereumAddress),
-        ipfsHash = (response[3] as String);
+        ipfsHash = (response[3] as String),
+        verified = (response[4] as bool);
 
   final BigInt taskId;
 
@@ -79,6 +102,27 @@ class SubmissionCreated {
   final _i1.EthereumAddress creator;
 
   final String ipfsHash;
+
+  final bool verified;
+}
+
+class SubmissionVerified {
+  SubmissionVerified(List<dynamic> response)
+      : taskId = (response[0] as BigInt),
+        submissionId = (response[1] as BigInt),
+        creator = (response[2] as _i1.EthereumAddress),
+        ipfsHash = (response[3] as String),
+        verified = (response[4] as bool);
+
+  final BigInt taskId;
+
+  final BigInt submissionId;
+
+  final _i1.EthereumAddress creator;
+
+  final String ipfsHash;
+
+  final bool verified;
 }
 
 class TaskCreated {

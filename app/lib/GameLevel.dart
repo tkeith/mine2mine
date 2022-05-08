@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:app/utils.dart';
@@ -15,12 +16,13 @@ import 'package:path_provider/path_provider.dart';
 
 import 'const.dart';
 import 'ifpssrc/ipfs_client_flutter_base.dart';
-const privateKey = "26dd62ddab48780847376fc95e0a8d635206126242b8d2e549d7f14255ce943c";
+String privateKey = "26dd62ddab48780847376fc95e0a8d635206126242b8d2e549d7f14255ce943c";
 const ABI = [{ "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "submissionId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "SubmissionCreated", "type": "event" }, { "anonymous": false, "inputs": [{ "indexed": false, "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "indexed": false, "internalType": "address", "name": "creator", "type": "address" }, { "indexed": false, "internalType": "string", "name": "text", "type": "string" }, { "indexed": false, "internalType": "uint256", "name": "bid", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "TaskCreated", "type": "event" }, { "inputs": [{ "internalType": "uint256", "name": "taskId", "type": "uint256" }, { "internalType": "string", "name": "ipfsHash", "type": "string" }], "name": "createSubmission", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "text", "type": "string" }, { "internalType": "uint256", "name": "bid", "type": "uint256" }, { "internalType": "uint256", "name": "expiresAt", "type": "uint256" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }], "name": "createTask", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "nonpayable", "type": "function" }];
-const CONTRACT_ADDRESS = '0x51797a758376671eA20f0Ace40c8DF7EcD72bc97';
+const CONTRACT_ADDRESS = '0xF4306B52EF4BB7af4915109488e2fB1b08cf1106';
 String? myaddress;
 
 
+Function? getMoreData;
 Function? recordStart ;
 Function? recordStop ;
 Function? aimSucceedCallback;
@@ -85,13 +87,19 @@ class _GameLevelState extends State<GameLevel> {
   }
 
 
-  Future<void> _stop() async {
+  Future<void> _stop(int _taskid) async {
     _timer?.cancel();
     final path = await _audioRecorder.stop();
     Uint8List rawdata = await File('$path').readAsBytes();
+    // var rawdata_data = base64Encode(rawdata);
+    var rawdata_data = base64.encode(rawdata);
     // send raw data to api
-    bool res = await sendrawdataToServer( rawdata );
-
+// <<<<<<< HEAD
+//
+// =======
+//     bool res = await sendrawdataToServer( rawdata );
+//
+// >>>>>>> 6cf9b028c56436ebff42230a40520b797ce12763
     //  tasks
     try {
       final credentials = EthPrivateKey.fromHex(privateKey);
@@ -102,13 +110,13 @@ class _GameLevelState extends State<GameLevel> {
       myaddress = address.hexEip55;
       var res = await client.getBalance(address);
 
-      Test testcontract = Test(address: EthereumAddress.fromHex("0x51797a758376671eA20f0Ace40c8DF7EcD72bc97"), client: client);
-      BigInt taskid = new BigInt.from(tasks[4]['taskId']);
-      testcontract.createSubmission(taskid, "ipfsHash", credentials: credentials);
+      Test testcontract = Test(address: EthereumAddress.fromHex(CONTRACT_ADDRESS), client: client);
+      BigInt taskid = new BigInt.from(tasks[_taskid]['taskId']);
+      String resIPFS = await sendrawdataToServer( rawdata_data );
+      String ressubmission = await testcontract.createSubmission(taskid, resIPFS, credentials: credentials);
+      print("ressubmission" + ressubmission.toString());
     } catch (e) {
     }
-
-
 
     setState(() => recording = false);
   }
@@ -133,6 +141,7 @@ class _GameLevelState extends State<GameLevel> {
     aimDx = 0 ;
     aimDy = 0;
     slimeList = [];
+    tasks = [];
     loaded = false;
     final credentials = EthPrivateKey.fromHex(privateKey);
     final address = credentials.address;
@@ -141,6 +150,7 @@ class _GameLevelState extends State<GameLevel> {
     print(address.hexEip55);
     myaddress = address.hexEip55;
     getData();
+    getMoreData = getData;
   }
 
   bool loaded = false;
@@ -159,23 +169,33 @@ class _GameLevelState extends State<GameLevel> {
     return true;
   }
 
+
+
+
   Future<bool> getData()async{
-    List<dynamic> _tasks = [];
-    for( int i = 0 ; i <= 20; i++ ){
+    print("getData");
+    // List<dynamic> _tasks = await getAllTasks();
+    // setState(() {
+    //   loaded = true;
+    //   tasks.addAll(_tasks);
+    // });
+
+    for( int i = 0 ; tasks.length < 20 || i  > 500 ; i++ ){
       dynamic task = await getNextTask();
-      if( task == null ){
-        print("no more tasks!");
-        break;
+      print("getData" + task.toString());
+      if( task != null ){
+        setState(() {
+          loaded = true;
+          tasks.add(task);
+          // tasks = [];
+          // tasks.addAll(_tasks);
+        });
       }
-      tasks.add(task);
     }
 
+
     // _tasks = await getAllTasks();
-    setState(() {
-      loaded = true;
-      tasks = [];
-      // tasks.addAll(_tasks);
-    });
+
     return true;
   }
 
@@ -184,12 +204,15 @@ class _GameLevelState extends State<GameLevel> {
   // TODO generates slime at random positions
   List<Offset> slimeList = [];
 
-  int health = 10;
+  static int health = 10;
   double bidPriceAll = 0.0;
   void aimFailed(){
     setState(() {
       health = health - 1;
     });
+    if(health == 0){
+      Navigator.pop(context, true);
+    }
   }
 
   void aimSucceed(double bid){
@@ -206,11 +229,11 @@ class _GameLevelState extends State<GameLevel> {
           Image.asset("gamebg.jpeg", fit: BoxFit.cover, height: double.infinity,
             width: double.infinity,
             alignment: Alignment.center,),
-          Bubbles( key: ObjectKey("1"),
+          loaded ?  Bubbles( key: ObjectKey("1"),
             completionCallback: (){},
             generating_rate: widget.gameSpeed!.toDouble() * 0.005,
             tasksInfo: tasks,
-          ),
+          ) : Loading(),
           Align(
             alignment: AlignmentDirectional.topEnd,
             child: Container(

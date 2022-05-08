@@ -31,8 +31,8 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
   final Color color = Colors.amber;
   final double maxBubbleSize = 50.0;
 
-  static removeBubbleById( int bubbleid){
-    bubbles.removeWhere((element) => element.id == bubbleid);
+  static removeBubbleById( int taskid){
+    bubbles.removeWhere((element) => element.taskInfo["taskId"] == taskid);
   }
 
   void play() {
@@ -58,7 +58,7 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
     // clear all bubbles.
     bubbles = [];
     Bubble.nBubble = 0;
-    healthPoint = 100.0;
+    healthPoint = 10;
     moneyCollected = 0.0;
     play();
   }
@@ -106,7 +106,9 @@ class _BubblesState extends State<Bubbles> with SingleTickerProviderStateMixin {
       dispose();
     }
     var rng = Random();
+
     if( rng.nextDouble() < widget.generating_rate! ){
+
       if( bubbles.length < 20 ){
         double aWidth = rng.nextDouble() * width;
         if( aWidth <= 50 ) {
@@ -177,7 +179,7 @@ class Bubble {
     this.lifespan = this.lifespan + 1;
     if( lifespan >= 1200 ){
       // TODO aim failed!
-      _BubblesState.removeBubbleById(this.id);
+      _BubblesState.removeBubbleById(this.taskInfo["taskId"]);
       aimFailedCallback!();
     }
   }
@@ -189,14 +191,14 @@ class Bubble {
             recordStart!();
           },
           onTapUp: (TapUpDetails details){
-            recordStop!();
-            _BubblesState.removeBubbleById(this.id);
+            recordStop!(this.taskInfo["taskId"]);
+            _BubblesState.removeBubbleById(this.taskInfo["taskId"]);
 
             aimSucceedCallback!( taskInfo["bid"].toDouble() );
           },
           onTapCancel: (){
-            recordStop!();
-            _BubblesState.removeBubbleById(this.id);
+            recordStop!(this.taskInfo["taskId"]);
+            _BubblesState.removeBubbleById(this.taskInfo["taskId"]);
             aimSucceedCallback!( taskInfo["bid"].toDouble() );
           },
         child: Column(

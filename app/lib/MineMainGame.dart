@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:app/GameLevel.dart';
 
+import 'RewardPage.dart';
+
 
 
 class MainGame extends StatefulWidget {
@@ -19,8 +21,11 @@ class _MainGameState extends State<MainGame> {
   }
 
 
+  TextEditingController _textEditingController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       body: Stack(
         children: [
@@ -110,7 +115,17 @@ class _MainGameState extends State<MainGame> {
                               builder: (context) =>
                                   GameLevel( gameSpeed: speedLevel, )
                           )
-                      );
+                      ).then((value) {
+                        if( (value != null) && value ){
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      RewardPage()
+                              )
+                          );
+                        }
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                         primary: Colors.pinkAccent,
@@ -120,12 +135,28 @@ class _MainGameState extends State<MainGame> {
                         elevation: 15.0,
                         fixedSize: Size.fromWidth(200)
                     ),
-                    child: const Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Text(
-                        'Start Game',
-                        style: TextStyle(fontSize: 20),
-                      ),
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: const EdgeInsets.all(15.0),
+                          child: Text(
+                            'Start Game',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                        // Padding(
+                        //   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                        //   child: TextFormField(
+                        //     controller: _textEditingController,
+                        //     decoration: const InputDecoration(
+                        //       border: UnderlineInputBorder(),
+                        //       labelText: 'address',
+                        //     ),
+                        //     initialValue: myaddress,
+                        //
+                        //   ),
+                        // ),
+                      ],
                     ),
                   ),
                 ),
