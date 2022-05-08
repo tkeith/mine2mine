@@ -116,7 +116,7 @@ class _MainGameState extends State<MainGame> {
                                   GameLevel( gameSpeed: speedLevel, )
                           )
                       ).then((value) {
-                        if( value ){
+                        if( (value != null) && value ){
                           Navigator.push(
                               context,
                               MaterialPageRoute(

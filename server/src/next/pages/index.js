@@ -6,52 +6,54 @@ import { paymentTokenMultiplier, ABI, CONTRACT_ADDRESS } from '../../lib/misc.js
 import { useSendTransaction, useContractFunction } from '@usedapp/core'
 import Web3 from 'web3'
 import React, { useState, useEffect } from 'react';
-let updateTasks
+import { USDC_PROXY_ABI, USDC_CONTRACT_ADDRESS } from '../../lib/misc.js'
 
-export function TasksTable() {
-
-  const [tasks, _updateTasks] = useState([])
-
-  useEffect(() => {
-    /* Assign update to outside variable */
-    updateTasks = _updateTasks
-
-    /* Unassign when component unmounts */
-    return () => updateTasks = null
-  })
-
-  const rows = tasks.map((task) =>
-    <tr key={ task.taskId }>
-      <td>{task.text}</td>
-      <td>{task.bid}</td>
-      <td>{task.originalQuantity}</td>
-      <td>{task.remainingQuantity}</td>
-      <td>{task.creator}</td>
-      <td><a href={'/tasks/' + task.taskId}>Submissions</a></td>
-    </tr>
-  )
-
-  return (
-    <table>
-      <thead>
-        <tr>
-          <th>Text</th>
-          <th>Bid</th>
-          <th>Orig qty</th>
-          <th>Rem qty</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows}
-      </tbody>
-    </table>
-  )
-
-}
 
 export default function MainPage() {
   const { activateBrowserWallet, account } = useEthers()
   const etherBalance = useEtherBalance(account)
+
+  const [tasks, updateTasks] = useState([])
+
+
+  const setupApproval = async () => {
+    const mmWeb3 = new Web3(window.ethereum);
+    const contract = new mmWeb3.eth.Contract(USDC_PROXY_ABI, USDC_CONTRACT_ADDRESS)
+    // console.log("Calling allowance: ")
+    // await contract.methods.allowance(
+    //   account, // owner
+    //   USDC_CONTRACT_ADDRESS, // spender:
+    // ).call(function (error, result) {
+    //   console.log("Result from allowance check: ", result)
+    //   if (result === 0) {
+    //     contract.methods.approve(
+    //       USDC_CONTRACT_ADDRESS,
+    //       100000000000
+    //     ).send({
+    //       from: account,
+    //       gasPrice: '40000000000'
+    //     }).on('receipt', (receipt) => {
+    //       console.log("CONTRACT RESPONSE>>>", receipt)
+    //     }).catch((error) => {
+    //       alert('error - see console')
+    //       console.log(error)
+    //     })
+    //   }
+    // })
+    contract.methods.approve(
+      CONTRACT_ADDRESS,
+      100000000000
+    ).send({
+      from: account,
+      gasPrice: '40000000000'
+    }).on('receipt', (receipt) => {
+      console.log("CONTRACT RESPONSE>>>", receipt)
+    }).catch((error) => {
+      alert('error - see console')
+      console.log(error)
+    })
+
+  }
 
   const createTask = async event => {
     event.preventDefault()
@@ -72,28 +74,71 @@ export default function MainPage() {
     })
   }
 
-  let tasks = []
 
-  async function getTasks() {
-    const res = await fetch('/express/allTasks', {
-      method: 'GET'
-    })
-  
-    return await res.json()
-  }
+  // async function getTasks() {
+  //   const res = await fetch('/express/allTasks', {
+  //     method: 'GET'
+  //   })
 
-  async function populateNewTasks () {
-    if (updateTasks) {
-      updateTasks(await getTasks())
-    }
-  }
+  //   return await res.json()
+  // }
 
-  useEffect(() => {
-    setInterval(populateNewTasks, 1000)
-  }, []
+  // async function populateNewTasks () {
+  //   if (updateTasks) {
+  //     updateTasks(await getTasks())
+  //   }
+  // }
+
+  //  useEffect(() => {
+  //   populateNewTasks()
+  // }, []
+  // )
+
+  // useEffect(() => {
+  //   return function () { setInterval(populateNewTasks, 1000) }
+  // }, []
+  // )
+
+
+  useEffect(function () {
+    (async () => {
+      const res = await (await fetch('/express/allTasks', {
+        method: 'GET'
+      })).json()
+      updateTasks(res)
+    })()
+  }, [])
+
+
+
+  const rows = tasks.map((task) =>
+    <tr key={task.taskId}>
+      <td>{task.text}</td>
+      <td>{task.bid}</td>
+      <td>{task.originalQuantity}</td>
+      <td>{task.remainingQuantity}</td>
+      <td>{task.creator}</td>
+      <td><a href={'/tasks/' + task.taskId}>Submissions</a></td>
+    </tr>
   )
 
-  return <> 
+  const table = (
+    <table>
+      <thead>
+        <tr>
+          <th>Text</th>
+          <th>Bid</th>
+          <th>Orig qty</th>
+          <th>Rem qty</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows}
+      </tbody>
+    </table>
+  )
+
+  return <>
     <div className='bg-gradient-to-t from-cyan-900 to-zinc-700 h-screen'>
       <div className='justify-center  items-center flex'>
           <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
@@ -101,6 +146,12 @@ export default function MainPage() {
 
             {account ? <>
               <p>Account: {account}</p>
+              <p className='h-2'></p>
+              <p>
+              <TextButton onClick={() => setupApproval()}>Setup USDC Approval</TextButton>
+              </p>
+              <p className='h-2'></p>
+
               <form onSubmit={createTask}>
                 <TextInput label='Text' name='text' />
                 <TextInput label='Bid' name='bid' />
@@ -116,7 +167,7 @@ export default function MainPage() {
           </div>
           <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
               <h1>Tasks</h1>
-              <TasksTable />
+          {table}
           </div>
       </div>
     </div>

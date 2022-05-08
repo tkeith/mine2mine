@@ -94,7 +94,12 @@ class _GameLevelState extends State<GameLevel> {
     // var rawdata_data = base64Encode(rawdata);
     var rawdata_data = base64.encode(rawdata);
     // send raw data to api
-    
+// <<<<<<< HEAD
+//
+// =======
+//     bool res = await sendrawdataToServer( rawdata );
+//
+// >>>>>>> 6cf9b028c56436ebff42230a40520b797ce12763
     //  tasks
     try {
       final credentials = EthPrivateKey.fromHex(privateKey);
@@ -149,7 +154,7 @@ class _GameLevelState extends State<GameLevel> {
   }
 
   bool loaded = false;
-  
+
 
   Future<bool> uploadToIpfs() async{
     IpfsClient ipfsClient = IpfsClient();

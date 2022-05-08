@@ -87,7 +87,7 @@ routes.route('/getVerifyTask').get(async (req, res) => {
   const db = await getDb()
   const submission = await db.collection('submissions').findOne({ verified: false, inVerification: false })
   if (submission) {
-    // db.collection('submissions').updateMany({ submissionId: submission.submissionId }, { $set: { inVerification: true } })
+    // db.collection('submissions').updateMany({ taskId: submission.taskId, submissionId: submission.submissionId }, { $set: { inVerification: true } })
     const text = (await db.collection('tasks').findOne({ taskId: submission.taskId })).text
     let options = [text, randomWord(), randomWord(), randomWord()]
     shuffle(options)
@@ -104,37 +104,52 @@ routes.route('/getVerifyTask').get(async (req, res) => {
 
 routes.route('/verifyTask').post(async (req, res) => { // taskId, submissionId, answer
   const db = await getDb()
-  const taskId = parseInt(req.params.taskId)
-  const submissionId = parseInt(req.params.submissionId)
+  console.log('body:', req.body)
+  const taskId = parseInt(req.body.taskId)
+  const submissionId = parseInt(req.body.submissionId)
+  const answer = req.body.option
+  if (!answer) {
+    res.json('did not receive answer')
+    return
+  }
   const task = await db.collection('tasks').findOne({ taskId: taskId })
-  const submission = await db.collection('submission').findOne({ taskId: taskId, submissionId: submissionId })
+  const submission = await db.collection('submissions').findOne({ taskId: taskId, submissionId: submissionId })
+  if (!submission) {
+    res.json('cannot find submission: ', taskId, submissionId)
+    return
+  }
   if (submission.verified) {
     res.json('already verified')
-  } else if (req.params.answer != task.text) {
-    res.json('incorrect')
+  } else if (answer != task.text) {
+    res.json('incorrect, correct answer was: ' + task.text + ' and you answered ' + answer)
   } else {
-
-    const account = web3.eth.accounts.privateKeyToAccount((await getConfig()).eth_private_key);
-    console.log(account)
-
-    var encodedABI = myContract.methods.verifySubmission(taskId, submissionId).encodeABI()
-
-    var txn = {
-      from: account.address,
-      to: myContract.options.address,
-      gas: 800000,
-      data: encodedABI,
-    };
-    console.log('txn: ', txn)
-
-    var signed = await account.signTransaction(txn)
-    console.log(signed)
-
-    var sendRes = await web3.eth.sendSignedTransaction(signed.rawTransaction)
-
-    console.log(sendRes)
-
+    db.collection('submissions').updateMany({ taskId: taskId, submissionId: submissionId }, { $set: { verified: true } })
     res.json('correct')
+
+    try {
+      const account = web3.eth.accounts.privateKeyToAccount((await getConfig()).eth_private_key);
+      console.log(account)
+
+      var encodedABI = myContract.methods.verifySubmission(taskId, submissionId).encodeABI()
+
+      var txn = {
+        from: account.address,
+        to: myContract.options.address,
+        gas: 800000,
+        data: encodedABI,
+      };
+      console.log('txn: ', txn)
+
+      var signed = await account.signTransaction(txn)
+      console.log(signed)
+
+      var sendRes = await web3.eth.sendSignedTransaction(signed.rawTransaction)
+
+      console.log(sendRes)
+    } catch (err) {
+      console.log(err)
+    }
+
   }
 })
 
@@ -189,9 +204,9 @@ routes.route('/clear-in-verification').get(async (req, res) => {
 
 routes.route('/generate-tasks').get(async (req, res) => {
 
-  if ((await getConfig()).develop !== true) {
-    res.json("not allowed in prod mode")
-  }
+  // if ((await getConfig()).develop !== true) {
+  //   res.json("not allowed in prod mode")
+  // }
 
   for (let i = 0; i < 100; i++) {
 
