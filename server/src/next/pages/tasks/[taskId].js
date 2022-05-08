@@ -22,10 +22,10 @@ const TaskPage = () => {
 
       setInfo({subs: res})
     })()
-  }, [router.isReady])
+  }, [router.isReady, taskId])
 
   const rows = info.subs.map((sub) =>
-    <tr><td className='p-4'>{sub.submissionId}</td><td className='p-4'>{sub.creator}</td><td className='p-4'><a href={'https://ipfs.io/ipfs/' + sub.ipfsHash}>IPFS Audio File</a></td></tr>)
+    <tr key={task.taskId}><td className='p-4'>{sub.submissionId}</td><td className='p-4'>{sub.creator}</td><td className='p-4'><a href={'https://ipfs.io/ipfs/' + sub.ipfsHash}>IPFS Audio File</a></td></tr>)
 
   return (
 
