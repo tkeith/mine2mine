@@ -1,4 +1,3 @@
-import Web3 from 'web3'
 import getDb from "../lib/db.js"
 import { myContract, web3 } from '../lib/misc.js';
 
@@ -20,7 +19,12 @@ async function checkForNewEvents() {
 
   console.log('getting task creations')
 
-  const taskCreatedEvents = await myContract.getPastEvents('TaskCreated', scanOptions)
+  try {
+    var taskCreatedEvents = await myContract.getPastEvents('TaskCreated', scanOptions)
+  } catch (err) {
+    console.log('failed to get events')
+    return
+  }
 
   console.log('handling task creations')
 
@@ -51,7 +55,12 @@ async function checkForNewEvents() {
 
   console.log('getting submission creations')
 
-  const submissionCreatedEvents = await myContract.getPastEvents('SubmissionCreated', scanOptions)
+  try {
+    var submissionCreatedEvents = await myContract.getPastEvents('SubmissionCreated', scanOptions)
+  } catch (err) {
+    console.log('failed to get events')
+    return
+  }
 
   console.log('handling submission creations')
 

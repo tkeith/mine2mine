@@ -6,7 +6,6 @@ import { paymentTokenMultiplier, ABI, CONTRACT_ADDRESS } from '../../lib/misc.js
 import { useSendTransaction, useContractFunction } from '@usedapp/core'
 import Web3 from 'web3'
 import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
 let updateTasks
 
 export function TasksTable() {
@@ -21,50 +20,14 @@ export function TasksTable() {
     return () => updateTasks = null
   })
 
-  const [open, setOpen] = React.useState(false);
-
-  const handleClickOpen = (taskId) => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-
   const rows = tasks.map((task) =>
     <tr key={ task.taskId }>
       <td>{task.text}</td>
       <td>{task.bid}</td>
       <td>{task.originalQuantity}</td>
       <td>{task.remainingQuantity}</td>
-      <td>
-        <Button variant='outlined' onClick={() => handleClickOpen(task.taskId)}>Submission</Button>
-        <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Task Information"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-           User Address: {task.creator}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-        <Button onClick={handleClose} autoFocus>
-            Download Audio
-          </Button>
-          <Button onClick={handleClose} autoFocus>
-            Okay
-          </Button>
-          
-        </DialogActions>
-      </Dialog>
-      </td>
+      <td>{task.creator}</td>
+      <td><a href={'/tasks/' + task.taskId}>Submissions</a></td>
     </tr>
   )
 
@@ -115,7 +78,7 @@ export default function MainPage() {
     const res = await fetch('/express/allTasks', {
       method: 'GET'
     })
-
+  
     return await res.json()
   }
 
@@ -130,22 +93,32 @@ export default function MainPage() {
   }, []
   )
 
-  return (
-    <div>
+  return <> 
+    <div className='bg-gradient-to-t from-cyan-900 to-zinc-700 h-screen'>
+      <div className='justify-center  items-center flex'>
+          <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
+          <div>
 
-      {account ? <>
-        <p>Account: {account}</p>
-        <form onSubmit={createTask}>
-          <TextInput label='Text' name='text' />
-          <TextInput label='Bid' name='bid' />
-          <TextInput label='Quantity' name='quantity' />
-          <TextInput label='Duration of Bid (in seconds)' name='duration' />
-          <SubmitButton>Create task</SubmitButton>
-        </form>
-      </>  :<div>
-        <TextButton onClick={() => activateBrowserWallet()}>Connect wallet</TextButton>
-      </div>}
-      
+            {account ? <>
+              <p>Account: {account}</p>
+              <form onSubmit={createTask}>
+                <TextInput label='Text' name='text' />
+                <TextInput label='Bid' name='bid' />
+                <TextInput label='Quantity' name='quantity' />
+                <TextInput label='Duration of Bid (in seconds)' name='duration' />
+                <SubmitButton>Create task</SubmitButton>
+              </form>
+            </>  :<div>
+              <TextButton onClick={() => activateBrowserWallet()}>Connect wallet</TextButton>
+            </div>}
+
+            </div>
+          </div>
+          <div className='border-3 border-gray-100 bg-gray-100 rounded-2xl ml-10 mr-10 w-fit m-12'>
+              <h1>Tasks</h1>
+              <TasksTable />
+          </div>
+      </div>
     </div>
-  )
+  </>
 }
