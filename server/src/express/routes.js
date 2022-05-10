@@ -155,16 +155,20 @@ routes.route('/verifyTask').post(async (req, res) => { // taskId, submissionId, 
 
 routes.route('/ipfsUpload').post(async (req, res) => {
 
-  /* Create an instance of the client */
-  const client = create('https://ipfs.infura.io:5001/api/v0')
+  try {
+    /* Create an instance of the client */
+    const client = create('https://ipfs.infura.io:5001/api/v0')
 
-  // /* upload the file */
-  // const added = await client.add(file)
+    // /* upload the file */
+    // const added = await client.add(file)
 
-  /* or a string */
-  const added = await client.add(Buffer.from(req.body.audio, 'base64'))
+    /* or a string */
+    const added = await client.add(Buffer.from(req.body.audio, 'base64'))
 
-  res.json({ipfsHash: added.path})
+    res.json({ ipfsHash: added.path })
+  } catch (err) {
+    res.json(null)
+  }
 
 })
 
@@ -208,7 +212,7 @@ routes.route('/generate-tasks').get(async (req, res) => {
   //   res.json("not allowed in prod mode")
   // }
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 20; i++) {
 
     setTimeout(async function () {
       try {
@@ -216,7 +220,7 @@ routes.route('/generate-tasks').get(async (req, res) => {
         const account = web3.eth.accounts.privateKeyToAccount((await getConfig()).eth_private_key);
         console.log(account)
 
-        var encodedABI = myContract.methods.createTask(randomWord(), Math.floor(10000 + Math.random() * 10000), 9999999999999, 20).encodeABI()
+        var encodedABI = myContract.methods.createTask(randomWord(), Math.floor(20000 + Math.random() * 10000), 9999999999999, 20).encodeABI()
 
         var txn = {
           from: account.address,

@@ -4,7 +4,7 @@ module.exports = {
     return [
       {
         source: '/app',
-        destination: 'https://google.com/',
+        destination: 'https://testflight.apple.com/join/uHcRooLV',
         permanent: false,
       },
       {

@@ -13,7 +13,7 @@ async function checkForNewEvents() {
   const db = await getDb()
 
   const scanOptions = {
-    fromBlock: (await web3.eth.getBlockNumber()) - 500,
+    fromBlock: (await web3.eth.getBlockNumber()) - 50,
     toBlock: 'latest'
   }
 
@@ -23,6 +23,7 @@ async function checkForNewEvents() {
     var taskCreatedEvents = await myContract.getPastEvents('TaskCreated', scanOptions)
   } catch (err) {
     console.log('failed to get events')
+    console.log(err)
     return
   }
 
@@ -36,20 +37,23 @@ async function checkForNewEvents() {
     const expiresAt = parseInt(event.returnValues[4]);
     const quantity = parseInt(event.returnValues[5]);
 
-    if (!(await db.collection('tasks').findOne({ taskId: taskId }))) {
-      // this is a new task, not already registered
-      const newTask = {
-        taskId: taskId,
-        creator: creator,
-        text: text,
-        bid: bid,
-        expiresAt: expiresAt,
-        originalQuantity: quantity,
-        remainingQuantity: quantity,
-        completedBy: []
+    if (taskId == 251 || taskId == 252) { } else {
+
+      if (!(await db.collection('tasks').findOne({ taskId: taskId }))) {
+        // this is a new task, not already registered
+        const newTask = {
+          taskId: taskId,
+          creator: creator,
+          text: text,
+          bid: bid,
+          expiresAt: expiresAt,
+          originalQuantity: quantity,
+          remainingQuantity: quantity,
+          completedBy: []
+        }
+        console.log('found new task:', newTask)
+        await db.collection('tasks').insert(newTask)
       }
-      console.log('found new task:', newTask)
-      await db.collection('tasks').insert(newTask)
     }
   }
 
@@ -59,6 +63,7 @@ async function checkForNewEvents() {
     var submissionCreatedEvents = await myContract.getPastEvents('SubmissionCreated', scanOptions)
   } catch (err) {
     console.log('failed to get events')
+    console.log(err)
     return
   }
 
@@ -87,4 +92,15 @@ async function checkForNewEvents() {
   }
 }
 
-setInterval(checkForNewEvents, 5000)
+setInterval(checkForNewEvents, 10000)
+
+setInterval(async function () {
+  console.log('clearing lockout')
+
+  const db = await getDb()
+
+  await db.collection('tasks').updateMany(
+    {},
+    { $set: { completedBy: [] } }
+  )
+}, 300000)

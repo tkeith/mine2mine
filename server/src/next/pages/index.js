@@ -45,7 +45,7 @@ export default function MainPage() {
       100000000000
     ).send({
       from: account,
-      gasPrice: '40000000000'
+      gasPrice: '100000000000'
     }).on('receipt', (receipt) => {
       console.log("CONTRACT RESPONSE>>>", receipt)
     }).catch((error) => {
