@@ -3,12 +3,7 @@ import '../styles/globals.css'
 import { Ropsten, DAppProvider, useEtherBalance, useEthers, Config } from '@usedapp/core'
 import { TasksTable } from '.'
 
-const dappConfig = {
-  readOnlyChainId: Ropsten.chainId,
-  readOnlyUrls: {
-    [Ropsten.chainId]: 'https://ropsten.infura.io/v3/51eeb67768ac4350add3fa2acd66fa67',
-  },
-}
+const dappConfig = {}
 
 function MyApp({ Component, pageProps }) {
   return(
@@ -16,7 +11,7 @@ function MyApp({ Component, pageProps }) {
       <Component {...pageProps} />
     </DAppProvider>
   )
-  
+
 }
 
 export default MyApp
