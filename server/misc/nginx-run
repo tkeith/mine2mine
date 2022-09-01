@@ -26,6 +26,7 @@ nohup $(
       echo 'failed to set up SSL cert; trying again in 1 minute'
       sleep 60
     done
+    /etc/init.d/nginx reload
   }
 
   htpasswd -b -c /opt/htpasswd-admin admin "$(cat /opt/nginx-admin-password.txt)"
